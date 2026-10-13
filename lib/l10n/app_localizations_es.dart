@@ -687,14 +687,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get eliminarCuenta => 'Eliminar cuenta';
 
   @override
-  String get eliminarPregunta => '¿Eliminar la cuenta de este dispositivo?';
+  String get eliminarPregunta =>
+      'Esto elimina tu cuenta de Kaval y no se puede deshacer.';
 
   @override
   String get eliminar => 'Eliminar';
 
   @override
   String get privacidadCuerpo =>
-      'Kaval guarda el texto de lo que dictas, nunca el audio. En esta fase todo vive en el teléfono.';
+      'Kaval guarda el texto de lo que dictas, nunca el audio. Con una cuenta, los viajes viven en la nube y también en el teléfono. El perfil local se queda solo en este aparato.';
 
   @override
   String get proAviso =>
@@ -821,4 +822,63 @@ class AppLocalizationsEs extends AppLocalizations {
   String falloArmado(String modo) {
     return 'Listo. La próxima operación fallará: $modo.';
   }
+
+  @override
+  String get credencialesInvalidas => 'El correo o la contraseña no coinciden.';
+
+  @override
+  String get correoEnUso => 'Ese correo ya tiene una cuenta.';
+
+  @override
+  String get contrasenaDebil => 'Elige una contraseña más segura.';
+
+  @override
+  String get demasiadosIntentos =>
+      'Demasiados intentos. Espera un momento y vuelve a probar.';
+
+  @override
+  String get redAuth => 'No hay conexión. Revisa tu red e inténtalo otra vez.';
+
+  @override
+  String get firebaseSinConfigurar =>
+      'Falta conectar Firebase en este proyecto. Mientras tanto puedes usar el perfil local.';
+
+  @override
+  String get sesionReciente =>
+      'Por seguridad, vuelve a entrar y luego elimina la cuenta.';
+
+  @override
+  String get cuentaDesactivada => 'Esta cuenta está desactivada.';
+
+  @override
+  String get operacionNoPermitida =>
+      'Esa forma de entrar no está activada en Firebase.';
+
+  @override
+  String get errorAuth => 'No se pudo completar el acceso. Inténtalo otra vez.';
+
+  @override
+  String get recuperarTitulo => 'Recuperar contraseña';
+
+  @override
+  String get enviarEnlace => 'Enviar enlace';
+
+  @override
+  String get correoEnviado =>
+      'Te enviamos un enlace para elegir una contraseña nueva.';
+
+  @override
+  String get cargarTunco => 'Cargar ejemplo de Playa El Tunco';
+
+  @override
+  String get tuncoCargado => 'Playa El Tunco quedó cargado';
+
+  @override
+  String get agregarInvitado => 'Agregar por nombre';
+
+  @override
+  String get nombreInvitado => 'Nombre de quien no tiene cuenta';
+
+  @override
+  String get invitadoAgregado => 'Listo. Esa persona queda solo con su nombre.';
 }

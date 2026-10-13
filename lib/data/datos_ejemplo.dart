@@ -241,6 +241,63 @@ Evento eventoRutaFlores() {
 
 List<Evento> eventosIniciales() => [eventoPlayaTunco(), eventoRutaFlores()];
 
+/// El mismo Tunco, pero la parte de Laura queda a nombre de la cuenta real.
+///
+/// El resto del grupo no tiene cuenta: solo conserva el nombre.
+/// La liquidación sigue usando los mismos centavos.
+Evento tuncoParaCuenta(Usuario usuario) {
+  if (usuario.local || usuario.id == idLaura) return eventoPlayaTunco();
+  String idDe(String id) => id == idLaura ? usuario.id : id;
+  final base = eventoPlayaTunco();
+  return Evento(
+    id: 'tunco-${usuario.id}',
+    nombre: base.nombre,
+    lugar: base.lugar,
+    inicio: base.inicio,
+    fin: base.fin,
+    portada: base.portada,
+    codigo: base.codigo,
+    emoji: base.emoji,
+    custodioId: idDe(base.custodioId),
+    integrantes: [
+      for (final persona in base.integrantes)
+        Integrante(
+          id: idDe(persona.id),
+          nombre: persona.id == idLaura ? usuario.primerNombre : persona.nombre,
+          colorFondo: persona.colorFondo,
+          colorInicial: persona.colorInicial,
+          estado: persona.id == idLaura ? EstadoUnion.admin : EstadoUnion.soloNombre,
+        ),
+    ],
+    aportes: [
+      for (final aporte in base.aportes)
+        AporteEfectivo(
+          id: aporte.id,
+          integranteId: idDe(aporte.integranteId),
+          montoCentavos: aporte.montoCentavos,
+          descripcion: aporte.descripcion,
+          emoji: aporte.emoji,
+          fecha: aporte.fecha,
+        ),
+    ],
+    gastos: [
+      for (final gasto in base.gastos)
+        Gasto(
+          id: gasto.id,
+          concepto: gasto.concepto,
+          montoCentavos: gasto.montoCentavos,
+          pagadorId: gasto.pagadorId == null ? null : idDe(gasto.pagadorId!),
+          participanteIds: [for (final id in gasto.participanteIds) idDe(id)],
+          categoria: gasto.categoria,
+          metodo: gasto.metodo,
+          emoji: gasto.emoji,
+          dictado: gasto.dictado,
+          fecha: gasto.fecha,
+        ),
+    ],
+  );
+}
+
 /// Borrador que muestra la confirmación del dictado de gasolina.
 Gasto borradorGasolina() {
   return Gasto(

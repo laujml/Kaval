@@ -1,3 +1,4 @@
+import '../data/leer_mapa.dart';
 import 'aporte_efectivo.dart';
 import 'gasto.dart';
 import 'integrante.dart';
@@ -51,6 +52,7 @@ class Evento {
 
   Evento copyWith({
     String? nombre,
+    String? codigo,
     List<Integrante>? integrantes,
     List<Gasto>? gastos,
     List<AporteEfectivo>? aportes,
@@ -64,13 +66,51 @@ class Evento {
       inicio: inicio,
       fin: fin,
       portada: portada,
-      codigo: codigo,
+      codigo: codigo ?? this.codigo,
       sincronizado: sincronizado ?? this.sincronizado,
       emoji: emoji,
       integrantes: integrantes ?? this.integrantes,
       gastos: gastos ?? this.gastos,
       aportes: aportes ?? this.aportes,
       custodioId: custodioId ?? this.custodioId,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'nombre': nombre,
+      'lugar': lugar,
+      'inicio': inicio.millisecondsSinceEpoch,
+      'fin': fin.millisecondsSinceEpoch,
+      'portada': portada.name,
+      'codigo': codigo,
+      'emoji': emoji,
+      'custodioId': custodioId,
+    };
+  }
+
+  factory Evento.fromMap(
+    String id,
+    Map<String, dynamic> mapa, {
+    List<Integrante> integrantes = const [],
+    List<Gasto> gastos = const [],
+    List<AporteEfectivo> aportes = const [],
+    bool sincronizado = true,
+  }) {
+    return Evento(
+      id: id,
+      nombre: textoDe(mapa['nombre']),
+      lugar: textoDe(mapa['lugar']),
+      inicio: fechaDe(mapa['inicio']),
+      fin: fechaDe(mapa['fin']),
+      portada: enumDe(PortadaEvento.values, mapa['portada'], PortadaEvento.playa),
+      codigo: textoDe(mapa['codigo']),
+      emoji: textoDe(mapa['emoji']),
+      custodioId: textoDe(mapa['custodioId']),
+      sincronizado: sincronizado,
+      integrantes: integrantes,
+      gastos: gastos,
+      aportes: aportes,
     );
   }
 }

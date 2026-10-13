@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/auth/mensajes_auth.dart';
 import '../../core/red/cliente_api.dart';
 import '../../core/theme/kaval_colors.dart';
 import '../../core/theme/kaval_texto.dart';
@@ -11,6 +12,7 @@ import '../../core/widgets/boton_coral.dart';
 import '../../core/widgets/kaval_avatar.dart';
 import '../../core/widgets/tarjeta_kaval.dart';
 import '../../data/datos_ejemplo.dart';
+import '../../data/servicio_auth.dart';
 import '../../l10n/app_localizations.dart';
 import '../../state/kaval_state.dart';
 
@@ -137,26 +139,13 @@ class PerfilPage extends StatelessWidget {
                     leading: const _IconoPastel(icono: Icons.logout, fondo: KavalColors.campo),
                     title: Text(textos.cerrarSesion, style: KavalTexto.cuerpo(color: KavalColors.marino, weight: FontWeight.w800)),
                     trailing: const Icon(Icons.chevron_right),
-                    onTap: () => context.go('/auth?modo=login'),
+                    onTap: () => _cerrarSesion(context),
                   ),
                   ListTile(
                     leading: const _IconoPastel(icono: Icons.delete_outline, fondo: Color(0xFFFFE0E0)),
                     title: Text(textos.eliminarCuenta, style: KavalTexto.cuerpo(weight: FontWeight.w800, color: KavalColors.rojo)),
                     trailing: const Icon(Icons.chevron_right, color: KavalColors.rojo),
-                    onTap: () async {
-                      final borrar = await showDialog<bool>(
-                        context: context,
-                        builder: (dialog) => AlertDialog(
-                          title: Text(textos.eliminarCuenta),
-                          content: Text(textos.eliminarPregunta),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.pop(dialog, false), child: Text(textos.cancelar)),
-                            TextButton(onPressed: () => Navigator.pop(dialog, true), child: Text(textos.eliminar)),
-                          ],
-                        ),
-                      );
-                      if (borrar == true && context.mounted) context.go('/bienvenida');
-                    },
+                    onTap: () => _eliminarCuenta(context, textos),
                   ),
                 ],
               ),
@@ -246,5 +235,46 @@ class _IconoPastel extends StatelessWidget {
       decoration: BoxDecoration(color: fondo, borderRadius: BorderRadius.circular(10)),
       child: Icon(icono, size: 18, color: KavalColors.marino),
     );
+  }
+}
+
+Future<void> _cerrarSesion(BuildContext context) async {
+  final estado = context.read<KavalState>();
+  if (estado.enLaNube) {
+    await context.read<ServicioAuth>().cerrarSesion();
+  }
+  if (!context.mounted) return;
+  await estado.salir();
+  if (!context.mounted) return;
+  context.go('/auth?modo=login');
+}
+
+Future<void> _eliminarCuenta(BuildContext context, AppLocalizations textos) async {
+  final borrar = await showDialog<bool>(
+    context: context,
+    builder: (dialog) => AlertDialog(
+      title: Text(textos.eliminarCuenta),
+      content: Text(textos.eliminarPregunta),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(dialog, false), child: Text(textos.cancelar)),
+        TextButton(onPressed: () => Navigator.pop(dialog, true), child: Text(textos.eliminar)),
+      ],
+    ),
+  );
+  if (borrar != true || !context.mounted) return;
+  final estado = context.read<KavalState>();
+  try {
+    if (estado.enLaNube) {
+      await estado.borrarCuentaEnLaNube();
+      if (!context.mounted) return;
+      await context.read<ServicioAuth>().eliminarCuenta();
+    }
+    if (!context.mounted) return;
+    await estado.salir();
+    if (!context.mounted) return;
+    context.go('/bienvenida');
+  } catch (error) {
+    if (!context.mounted) return;
+    mostrarAviso(context, mensajeAuth(error, textos));
   }
 }

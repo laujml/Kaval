@@ -45,24 +45,7 @@ class TarjetaEvento extends StatelessWidget {
                 Positioned(
                   left: 8,
                   top: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.cloud_done_rounded, size: 14, color: KavalColors.verde),
-                        const SizedBox(width: 4),
-                        Text(
-                          textos.sincronizado,
-                          style: KavalTexto.cuerpo(size: 11, weight: FontWeight.w800, color: KavalColors.verde),
-                        ),
-                      ],
-                    ),
-                  ),
+                  child: _MarcaSincronizacion(alDia: evento.sincronizado, textos: textos),
                 ),
               ],
             ),
@@ -127,5 +110,43 @@ class TarjetaEvento extends StatelessWidget {
 
     if (ancho == null) return tarjeta;
     return SizedBox(width: ancho, height: 292, child: tarjeta);
+  }
+}
+
+class _MarcaSincronizacion extends StatelessWidget {
+  const _MarcaSincronizacion({required this.alDia, required this.textos});
+
+  final bool alDia;
+  final AppLocalizations textos;
+
+  @override
+  Widget build(BuildContext context) {
+    final etiqueta = alDia ? textos.sincronizado : textos.pendiente;
+    final color = alDia ? KavalColors.verde : KavalColors.marino;
+    return Semantics(
+      label: etiqueta,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              alDia ? Icons.cloud_done_rounded : Icons.cloud_upload_rounded,
+              size: 14,
+              color: color,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              etiqueta,
+              style: KavalTexto.cuerpo(size: 11, weight: FontWeight.w800, color: color),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

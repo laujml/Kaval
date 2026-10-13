@@ -1,3 +1,5 @@
+import '../data/leer_mapa.dart';
+
 /// Cómo se unió la persona al evento. Sirve para la pantalla de invitación.
 enum EstadoUnion { admin, unido, soloNombre, pendiente }
 
@@ -23,5 +25,24 @@ class Integrante {
     final limpio = nombre.trim();
     if (limpio.isEmpty) return '?';
     return limpio[0].toUpperCase();
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'nombre': nombre,
+      'colorFondo': colorFondo,
+      'colorInicial': colorInicial,
+      'estado': estado.name,
+    };
+  }
+
+  factory Integrante.fromMap(String id, Map<String, dynamic> mapa) {
+    return Integrante(
+      id: id,
+      nombre: textoDe(mapa['nombre']),
+      colorFondo: enteroDe(mapa['colorFondo']),
+      colorInicial: enteroDe(mapa['colorInicial']),
+      estado: enumDe(EstadoUnion.values, mapa['estado'], EstadoUnion.soloNombre),
+    );
   }
 }

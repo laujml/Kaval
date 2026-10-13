@@ -21,29 +21,40 @@ class EventosPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: KavalColors.crema,
       body: SafeArea(
-        child: ListView(
+        child: ListView.builder(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-          children: [
-            Text(textos.eventos, style: KavalTexto.titulo(size: 28)),
-            const SizedBox(height: 12),
-            BotonCoral(
-              texto: textos.nuevoEvento,
-              icono: const Icon(Icons.add, color: Colors.white),
-              onPressed: () => context.push('/nuevo-evento'),
-            ),
-            const SizedBox(height: 10),
-            BotonBlanco(texto: textos.unirme, onPressed: () => _unirme(context)),
-            const SizedBox(height: 16),
-            for (final evento in estado.eventos) ...[
-              TarjetaEvento(
+          itemCount: estado.eventos.length + 1,
+          itemBuilder: (context, indice) {
+            if (indice == 0) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(textos.eventos, style: KavalTexto.titulo(size: 28)),
+                  const SizedBox(height: 12),
+                  BotonCoral(
+                    texto: textos.nuevoEvento,
+                    icono: const Icon(Icons.add, color: Colors.white),
+                    onPressed: () => context.push('/nuevo-evento'),
+                  ),
+                  const SizedBox(height: 10),
+                  BotonBlanco(texto: textos.unirme, onPressed: () => _unirme(context)),
+                  const SizedBox(height: 10),
+                  BotonBlanco(texto: textos.cargarTunco, onPressed: () => _cargarTunco(context)),
+                  const SizedBox(height: 16),
+                ],
+              );
+            }
+            final evento = estado.eventos[indice - 1];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: TarjetaEvento(
                 evento: evento,
                 saldoCentavos: estado.saldoEn(evento),
                 idioma: estado.idioma,
                 onTap: () => context.push('/evento/${evento.id}'),
               ),
-              const SizedBox(height: 12),
-            ],
-          ],
+            );
+          },
         ),
       ),
     );
@@ -76,9 +87,7 @@ class EventosPage extends StatelessWidget {
               decoration: decoracionCampo(hint: textos.codigoHint),
               validator: (valor) {
                 final texto = valor?.trim() ?? '';
-                if (texto.isEmpty) return textos.codigoInvalido;
-                final existe = context.read<KavalState>().porCodigo(texto);
-                if (existe == null) return textos.codigoInvalido;
+                if (texto.length < 4) return textos.codigoInvalido;
                 return null;
               },
             ),
@@ -99,9 +108,26 @@ class EventosPage extends StatelessWidget {
     codigo.dispose();
     foco.dispose();
     if (!context.mounted || unio != true) return;
-    final evento = context.read<KavalState>().porCodigo(escrito);
-    if (evento == null) return;
+    final evento = await context.read<KavalState>().unirse(escrito);
+    if (!context.mounted) return;
+    if (evento == null) {
+      mostrarAviso(context, textos.codigoInvalido);
+      return;
+    }
     mostrarAviso(context, textos.teUniste);
     context.push('/evento/${evento.id}');
+  }
+
+  Future<void> _cargarTunco(BuildContext context) async {
+    final textos = AppLocalizations.of(context);
+    try {
+      await context.read<KavalState>().cargarEjemploTunco();
+      if (!context.mounted) return;
+      mostrarAviso(context, textos.tuncoCargado);
+    } catch (error) {
+      debugPrint('[kaval] no se pudo cargar Tunco: $error');
+      if (!context.mounted) return;
+      mostrarAviso(context, textos.errorGenerico);
+    }
   }
 }

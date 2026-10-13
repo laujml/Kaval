@@ -1,3 +1,5 @@
+import '../data/leer_mapa.dart';
+
 /// Categoría visual del gasto. El emoji concreto vive en cada gasto.
 enum CategoriaGasto { comida, transporte, hospedaje, diversion }
 
@@ -33,4 +35,35 @@ class Gasto {
   final DateTime fecha;
 
   bool get esEfectivoGrupo => metodo == MetodoPago.efectivoGrupo;
+
+  Map<String, dynamic> toMap() {
+    return {
+      'concepto': concepto,
+      'montoCentavos': montoCentavos,
+      'pagadorId': pagadorId,
+      'participanteIds': participanteIds,
+      'categoria': categoria.name,
+      'metodo': metodo.name,
+      'emoji': emoji,
+      'dictado': dictado,
+      'fecha': fecha.millisecondsSinceEpoch,
+    };
+  }
+
+  factory Gasto.fromMap(String id, Map<String, dynamic> mapa) {
+    return Gasto(
+      id: id,
+      concepto: textoDe(mapa['concepto']),
+      montoCentavos: enteroDe(mapa['montoCentavos']),
+      pagadorId: mapa['pagadorId'] as String?,
+      participanteIds: [
+        for (final item in (mapa['participanteIds'] as List?) ?? const []) item.toString(),
+      ],
+      categoria: enumDe(CategoriaGasto.values, mapa['categoria'], CategoriaGasto.comida),
+      metodo: enumDe(MetodoPago.values, mapa['metodo'], MetodoPago.tarjeta),
+      emoji: textoDe(mapa['emoji'], siVacio: '💸'),
+      dictado: mapa['dictado'] as bool? ?? false,
+      fecha: fechaDe(mapa['fecha']),
+    );
+  }
 }
