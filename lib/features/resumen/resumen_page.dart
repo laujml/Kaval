@@ -1,5 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../../core/compartir/compartir_texto.dart';
+import '../../core/compartir/texto_resumen.dart';
 
 import '../../core/liquidacion/liquidacion.dart';
 import '../../core/theme/kaval_colors.dart';
@@ -27,6 +32,7 @@ class ResumenPage extends StatelessWidget {
     final evento = estado.buscar(eventoId);
     if (evento == null) return Scaffold(body: Center(child: Text(textos.sinEventos)));
     final resultado = calcularLiquidacion(evento);
+    final resumen = textoResumen(textos, evento, resultado);
     final porCategoria = <CategoriaGasto, int>{};
     for (final gasto in evento.gastos) {
       porCategoria[gasto.categoria] = (porCategoria[gasto.categoria] ?? 0) + gasto.montoCentavos;
@@ -118,7 +124,7 @@ class ResumenPage extends StatelessWidget {
               child: Column(
                 children: [
                   FilledButton.icon(
-                    onPressed: () => mostrarAviso(context, textos.resumenListo),
+                    onPressed: () => unawaited(compartirTexto(context, resumen)),
                     style: FilledButton.styleFrom(
                       backgroundColor: KavalColors.whatsapp,
                       minimumSize: const Size.fromHeight(52),
@@ -130,9 +136,9 @@ class ResumenPage extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Expanded(child: BotonBlanco(texto: textos.imagen, onPressed: () => mostrarAviso(context, textos.resumenListo))),
+                      Expanded(child: BotonBlanco(texto: textos.imagen, onPressed: () => unawaited(compartirTexto(context, resumen)))),
                       const SizedBox(width: 8),
-                      Expanded(child: BotonBlanco(texto: textos.texto, onPressed: () => mostrarAviso(context, textos.resumenListo))),
+                      Expanded(child: BotonBlanco(texto: textos.texto, onPressed: () => unawaited(compartirTexto(context, resumen)))),
                       const SizedBox(width: 8),
                       Expanded(child: BotonBlanco(texto: '${textos.pdf} ${textos.pro}', onPressed: () => mostrarAviso(context, textos.proAviso))),
                     ],

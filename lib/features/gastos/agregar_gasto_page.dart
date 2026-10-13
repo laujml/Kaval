@@ -22,10 +22,11 @@ import '../../state/kaval_state.dart';
 import '../errores/control_errores_page.dart';
 
 class AgregarGastoPage extends StatefulWidget {
-  const AgregarGastoPage({super.key, required this.eventoId, this.gastoId});
+  const AgregarGastoPage({super.key, required this.eventoId, this.gastoId, this.desdeVoz = false});
 
   final String eventoId;
   final String? gastoId;
+  final bool desdeVoz;
 
   @override
   State<AgregarGastoPage> createState() => _AgregarGastoPageState();
@@ -68,6 +69,20 @@ class _AgregarGastoPageState extends State<AgregarGastoPage> {
       _pagadorId = existente.pagadorId ?? (ids.isEmpty ? null : ids.first);
       _participantes = existente.participanteIds.toSet();
       _dictado = existente.dictado;
+      return;
+    }
+    if (widget.desdeVoz) {
+      final estado = context.read<KavalState>();
+      final borrador = estado.borrador;
+      _concepto.text = borrador.concepto;
+      _monto.text = (borrador.montoCentavos / 100).toStringAsFixed(2);
+      _categoria = borrador.categoria;
+      _dictado = true;
+      _participantes = ids.toSet();
+      final pagador = borrador.pagadorId;
+      _pagadorId = pagador != null && ids.contains(pagador)
+          ? pagador
+          : (ids.contains(estado.usuario.id) ? estado.usuario.id : (ids.isEmpty ? null : ids.first));
       return;
     }
     _concepto.text = textos.conceptoEjemplo;
@@ -241,6 +256,11 @@ class _AgregarGastoPageState extends State<AgregarGastoPage> {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                   children: [
+                    if (widget.desdeVoz)
+                      _AvisoVoz(
+                        revisa: textos.vozRevisa,
+                        oido: estado.fraseOida.trim().isEmpty ? null : textos.vozOido(estado.fraseOida.trim()),
+                      ),
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -391,6 +411,32 @@ class _AgregarGastoPageState extends State<AgregarGastoPage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AvisoVoz extends StatelessWidget {
+  const _AvisoVoz({required this.revisa, this.oido});
+
+  final String revisa;
+  final String? oido;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Semantics(
+        label: oido ?? revisa,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(color: KavalColors.menta, borderRadius: BorderRadius.circular(16)),
+          child: Text(
+            oido == null ? revisa : '$revisa\n$oido',
+            style: KavalTexto.cuerpo(color: KavalColors.marino, weight: FontWeight.w800),
+          ),
         ),
       ),
     );

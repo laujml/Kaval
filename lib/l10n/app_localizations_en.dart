@@ -365,7 +365,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get conceptoEjemplo => 'Seafood dinner 🦐';
 
   @override
-  String get escuchando => 'LISTENING · 0:04';
+  String get escuchando => 'Listening…';
 
   @override
   String get transcribiendo => 'Transcribing on your device…';
@@ -605,8 +605,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get copiado => 'Code copied';
 
   @override
-  String get expira =>
-      'Expires in 7 days · Scan it in the app or use the link.';
+  String get expira => 'Scan it in the app or share the code.';
 
   @override
   String get whatsapp => 'WhatsApp';
@@ -897,4 +896,67 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get invitadoAgregado => 'Done. That person is saved with just a name.';
+
+  @override
+  String get vozPermiso =>
+      'Kaval needs the microphone to dictate an expense. Turn it on in the phone settings.';
+
+  @override
+  String get vozSinRed =>
+      'There\'s no connection to recognize speech. You can type the expense.';
+
+  @override
+  String get vozNoEntendida =>
+      'We didn\'t catch that. Say the amount and what it was, for example: I paid 25 dollars for pupusas.';
+
+  @override
+  String get vozNoDisponible =>
+      'This phone can\'t dictate right now. Type the expense.';
+
+  @override
+  String get vozRevisa => 'Check the amount and the description before saving.';
+
+  @override
+  String vozOido(String frase) {
+    return 'We heard: “$frase”';
+  }
+
+  @override
+  String get escanearCodigo => 'Scan code';
+
+  @override
+  String get camaraPermiso =>
+      'Kaval needs the camera to read a trip QR code. Turn it on in the phone settings.';
+
+  @override
+  String get qrInvalido => 'That QR doesn\'t have a trip code.';
+
+  @override
+  String get apuntaQr => 'Point at the trip QR code';
+
+  @override
+  String qrEtiqueta(String codigo) {
+    return 'QR code $codigo';
+  }
+
+  @override
+  String mensajeInvitacion(String evento, String codigo) {
+    return 'Join $evento on Kaval. Code: $codigo';
+  }
+
+  @override
+  String mensajeResumen(
+    String evento,
+    String total,
+    String pagos,
+    String sobrante,
+  ) {
+    return '$evento\nTotal: $total\n$pagos\nGroup cash left: $sobrante';
+  }
+
+  @override
+  String get nadieDebe => 'Nobody owes anyone.';
+
+  @override
+  String get compartirFallo => 'The share sheet couldn\'t open.';
 }

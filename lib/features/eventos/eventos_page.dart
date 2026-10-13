@@ -39,6 +39,8 @@ class EventosPage extends StatelessWidget {
                   const SizedBox(height: 10),
                   BotonBlanco(texto: textos.unirme, onPressed: () => _unirme(context)),
                   const SizedBox(height: 10),
+                  BotonBlanco(texto: textos.escanearCodigo, onPressed: () => context.push('/escanear')),
+                  const SizedBox(height: 10),
                   BotonBlanco(texto: textos.cargarTunco, onPressed: () => _cargarTunco(context)),
                   const SizedBox(height: 16),
                 ],

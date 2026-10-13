@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../core/liquidacion/liquidacion.dart';
 import '../core/red/cliente_api.dart';
+import '../core/utils/etiquetas.dart';
 import '../data/datos_ejemplo.dart';
 import '../data/repositorios/repositorio_datos.dart';
 import '../models/aporte_efectivo.dart';
@@ -27,6 +28,9 @@ class KavalState extends ChangeNotifier {
   Usuario usuario;
   List<Evento> eventos;
   Gasto borrador;
+
+  /// Frase que el micrófono entendió, para mostrarla al revisar el gasto.
+  String fraseOida = '';
   bool sincronizarNube = true;
   PortadaEvento? filtro;
   bool _sesionNube = false;
@@ -244,6 +248,34 @@ class KavalState extends ChangeNotifier {
       );
     });
     if (enLaNube) unawaited(datos!.aportes.guardar(eventoId, aporte));
+  }
+
+  /// Deja el gasto dictado listo para el formulario. No lo guarda.
+  void aplicarDictado({
+    required String eventoId,
+    required int montoCentavos,
+    required String concepto,
+    required CategoriaGasto categoria,
+    required String frase,
+  }) {
+    final evento = buscar(eventoId);
+    if (evento == null) return;
+    final ids = [for (final persona in evento.integrantes) persona.id];
+    final pagador = ids.contains(usuario.id) ? usuario.id : (ids.isEmpty ? null : ids.first);
+    fraseOida = frase;
+    borrador = Gasto(
+      id: 'borrador-voz',
+      concepto: concepto,
+      montoCentavos: montoCentavos,
+      pagadorId: pagador,
+      participanteIds: ids,
+      categoria: categoria,
+      metodo: MetodoPago.tarjeta,
+      emoji: emojiCategoria(categoria),
+      dictado: true,
+      fecha: DateTime.now(),
+    );
+    notifyListeners();
   }
 
   void confirmarBorrador(String eventoId) {

@@ -64,7 +64,7 @@ class ConfirmarGastoPage extends StatelessWidget {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            '“${textos.fraseDictado}” · ${pagador?.nombre ?? textos.tu} · ${textos.haceUnMomento}',
+                            '“${estado.fraseOida.trim().isEmpty ? borrador.concepto : estado.fraseOida.trim()}” · ${pagador?.nombre ?? textos.tu} · ${textos.haceUnMomento}',
                             style: KavalTexto.cuerpo(color: KavalColors.marino),
                           ),
                         ),
@@ -122,7 +122,12 @@ class ConfirmarGastoPage extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Expanded(child: BotonBlanco(texto: textos.editar, onPressed: () => context.push('/evento/$eventoId/gasto'))),
+                      Expanded(
+                        child: BotonBlanco(
+                          texto: textos.editar,
+                          onPressed: () => context.push('/evento/$eventoId/gasto?voz=1'),
+                        ),
+                      ),
                       const SizedBox(width: 8),
                       Expanded(child: BotonBlanco(texto: textos.volverDictar, onPressed: () => volver(context))),
                     ],

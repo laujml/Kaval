@@ -1,6 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+
+import '../../core/compartir/compartir_texto.dart';
 
 import '../../core/theme/kaval_colors.dart';
 import '../../core/theme/kaval_texto.dart';
@@ -68,7 +73,7 @@ class InvitarPage extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  const _QrFalso(),
+                  _CodigoQr(codigo: evento.codigo, etiqueta: textos.qrEtiqueta(evento.codigo)),
                   const SizedBox(height: 8),
                   Text(textos.expira, textAlign: TextAlign.center, style: KavalTexto.cuerpo(size: 12)),
                   const SizedBox(height: 8),
@@ -76,13 +81,25 @@ class InvitarPage extends StatelessWidget {
                     children: [
                       Expanded(
                         child: FilledButton(
-                          onPressed: () => mostrarAviso(context, textos.enlaceListo),
-                          style: FilledButton.styleFrom(backgroundColor: KavalColors.whatsapp),
+                          onPressed: () => unawaited(
+                            compartirTexto(context, textos.mensajeInvitacion(evento.nombre, evento.codigo)),
+                          ),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: KavalColors.whatsapp,
+                            minimumSize: const Size(48, 48),
+                          ),
                           child: Text(textos.whatsapp),
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Expanded(child: BotonBlanco(texto: textos.enlace, onPressed: () => mostrarAviso(context, textos.enlaceListo))),
+                      Expanded(
+                        child: BotonBlanco(
+                          texto: textos.enlace,
+                          onPressed: () => unawaited(
+                            compartirTexto(context, textos.mensajeInvitacion(evento.nombre, evento.codigo)),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -135,38 +152,34 @@ class InvitarPage extends StatelessWidget {
   }
 }
 
-class _QrFalso extends StatelessWidget {
-  const _QrFalso();
+class _CodigoQr extends StatelessWidget {
+  const _CodigoQr({required this.codigo, required this.etiqueta});
+
+  final String codigo;
+  final String etiqueta;
 
   @override
   Widget build(BuildContext context) {
-    const celdas = [
-      '1110111',
-      '1000101',
-      '1011101',
-      '1000001',
-      '1110111',
-      '0001000',
-      '1111111',
-    ];
-    return Container(
-      padding: const EdgeInsets.all(8),
-      color: Colors.white,
-      child: Column(
-        children: [
-          for (final fila in celdas)
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (final celda in fila.split(''))
-                  Container(
-                    width: 10,
-                    height: 10,
-                    color: celda == '1' ? KavalColors.marino : Colors.white,
-                  ),
-              ],
+    return Semantics(
+      label: etiqueta,
+      child: LayoutBuilder(
+        builder: (context, limites) {
+          final lado = limites.maxWidth.clamp(140.0, 220.0);
+          return ColoredBox(
+            color: Colors.white,
+            child: QrImageView(
+              data: codigo,
+              size: lado,
+              backgroundColor: Colors.white,
+              semanticsLabel: etiqueta,
+              eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: KavalColors.marino),
+              dataModuleStyle: const QrDataModuleStyle(
+                dataModuleShape: QrDataModuleShape.square,
+                color: KavalColors.marino,
+              ),
             ),
-        ],
+          );
+        },
       ),
     );
   }

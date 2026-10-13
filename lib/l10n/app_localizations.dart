@@ -761,7 +761,7 @@ abstract class AppLocalizations {
   /// No description provided for @escuchando.
   ///
   /// In es, this message translates to:
-  /// **'ESCUCHANDO · 0:04'**
+  /// **'Escuchando…'**
   String get escuchando;
 
   /// No description provided for @transcribiendo.
@@ -1169,7 +1169,7 @@ abstract class AppLocalizations {
   /// No description provided for @expira.
   ///
   /// In es, this message translates to:
-  /// **'Expira en 7 días · Escanéalo desde la app o usa el enlace.'**
+  /// **'Escanéalo desde la app o comparte el código.'**
   String get expira;
 
   /// No description provided for @whatsapp.
@@ -1705,6 +1705,101 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Listo. Esa persona queda solo con su nombre.'**
   String get invitadoAgregado;
+
+  /// No description provided for @vozPermiso.
+  ///
+  /// In es, this message translates to:
+  /// **'Kaval necesita el micrófono para dictar el gasto. Actívalo en los ajustes del teléfono.'**
+  String get vozPermiso;
+
+  /// No description provided for @vozSinRed.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay conexión para reconocer la voz. Puedes escribir el gasto.'**
+  String get vozSinRed;
+
+  /// No description provided for @vozNoEntendida.
+  ///
+  /// In es, this message translates to:
+  /// **'No entendimos la frase. Di el monto y el concepto, por ejemplo: pagué 25 dólares de pupusas.'**
+  String get vozNoEntendida;
+
+  /// No description provided for @vozNoDisponible.
+  ///
+  /// In es, this message translates to:
+  /// **'Este teléfono no puede dictar ahora. Escribe el gasto.'**
+  String get vozNoDisponible;
+
+  /// No description provided for @vozRevisa.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisa el monto y el concepto antes de guardar.'**
+  String get vozRevisa;
+
+  /// No description provided for @vozOido.
+  ///
+  /// In es, this message translates to:
+  /// **'Oímos: “{frase}”'**
+  String vozOido(String frase);
+
+  /// No description provided for @escanearCodigo.
+  ///
+  /// In es, this message translates to:
+  /// **'Escanear código'**
+  String get escanearCodigo;
+
+  /// No description provided for @camaraPermiso.
+  ///
+  /// In es, this message translates to:
+  /// **'Kaval necesita la cámara para leer el código QR. Actívala en los ajustes del teléfono.'**
+  String get camaraPermiso;
+
+  /// No description provided for @qrInvalido.
+  ///
+  /// In es, this message translates to:
+  /// **'Ese QR no tiene un código de viaje.'**
+  String get qrInvalido;
+
+  /// No description provided for @apuntaQr.
+  ///
+  /// In es, this message translates to:
+  /// **'Apunta al código QR del viaje'**
+  String get apuntaQr;
+
+  /// No description provided for @qrEtiqueta.
+  ///
+  /// In es, this message translates to:
+  /// **'Código QR {codigo}'**
+  String qrEtiqueta(String codigo);
+
+  /// No description provided for @mensajeInvitacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Únete a {evento} en Kaval. Código: {codigo}'**
+  String mensajeInvitacion(String evento, String codigo);
+
+  /// No description provided for @mensajeResumen.
+  ///
+  /// In es, this message translates to:
+  /// **'{evento}\nTotal: {total}\n{pagos}\nEfectivo del grupo sobrante: {sobrante}'**
+  String mensajeResumen(
+    String evento,
+    String total,
+    String pagos,
+    String sobrante,
+  );
+
+  /// No description provided for @nadieDebe.
+  ///
+  /// In es, this message translates to:
+  /// **'Nadie le debe a nadie.'**
+  String get nadieDebe;
+
+  /// No description provided for @compartirFallo.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo abrir el menú para compartir.'**
+  String get compartirFallo;
 }
 
 class _AppLocalizationsDelegate

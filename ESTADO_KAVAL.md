@@ -1,6 +1,6 @@
 # Estado de Kaval
 
-Fecha: 13 de octubre de 2026. La app está en la raíz del repositorio. El proyecto de Firebase es `kaval-4216d`. Dictado, QR y compartir siguen simulados: son la fase 3 y no se tocaron.
+Fecha: 13 de octubre de 2026. La app está en la raíz del repositorio. El proyecto de Firebase es `kaval-4216d`.
 
 ## 1. Hecho y probado
 
@@ -13,45 +13,46 @@ Fecha: 13 de octubre de 2026. La app está en la raíz del repositorio. El proye
 | Evento a mano | Con Laura se creó «Cena de prueba» (`eventos/evento-1791914331113`). El detalle mostró Sincronizado, $0.00 y 7 integrantes. Falta confirmar el documento en la consola. |
 | Gasto sin conexión | Con Ana, modo avión, en Tunco. Dio mostró «Sin conexión»; «Seguir sin conexión» guardó el gasto en el teléfono. El total pasó de $202.00 a $238.00. Al volver la red y abrir la app de nuevo, la tarjeta decía Sincronizado y el total seguía en $238.00. El teclado del emulador metió el texto dentro de la pista y el concepto quedó «Cena de mTaxiavionariscos», $36.00. |
 | SHA-1 y SHA-256 de debug | Ya están en la app Android. SHA-1 `B7:36:A3:C9:70:63:22:84:58:2E:E2:88:E0:59:8D:E5:4E:32:FD:BE`. SHA-256 `4A:45:E1:AC:2D:A5:FB:14:A2:D9:06:87:7D:9F:BB:1E:0C:B7:2D:0C:DA:77:7A:EA:52:4F:13:C2:39:66:98:8E`. |
-| Apple oculto fuera de iOS | En el login del Pixel 7 solo aparece Google. El botón de Apple usa `defaultTargetPlatform == TargetPlatform.iOS` (sin `dart:io`, para que la web siga analizando). El README lo dice. |
-| Análisis y tests | `flutter analyze`: No issues found. `flutter test`: 22 pasaron. |
+| Apple oculto fuera de iOS | En el login del Pixel 7 solo aparece Google. El botón de Apple usa `defaultTargetPlatform == TargetPlatform.iOS`. |
+| Parser de voz y QR | `flutter test`: «pagué 25 dólares de pupusas» queda en $25.00 y Pupusas. También gasolina, decimales, inglés, es-SV y un código dentro de un texto. No usa el micrófono. |
+| Análisis y tests | `flutter analyze`: No issues found. `flutter test`: 30 pasaron. |
 
-## 2. Hecho, sin la prueba visual final
+## 2. Hecho, sin probar en el Pixel 7
 
-- Google: el botón abre la pantalla de Google. Cancelar no muestra aviso. Si se interrumpe, no hay cuenta de Google en el teléfono o el SHA no coincide, hay una frase en español e inglés. Falta elegir una cuenta y volver a Kaval: el emulador no tiene una.
-- Recuperar contraseña: el diálogo valida el correo y llama a `sendPasswordResetEmail`. Falta abrir el correo.
-- Eliminar cuenta: pide confirmación y, si entraste con correo, la contraseña otra vez (`reauthenticateWithCredential`) antes de borrar el perfil y la cuenta. Revisa `mounted` después de cada espera. No se borró ninguna cuenta. No borrar `pruebakaval1210@gmail.com`.
-- La marca Pendiente/Sincronizado del detalle ya no está fija: usa `evento.sincronizado`. Un gasto en la nube queda Pendiente hasta que Firestore lo confirma; el perfil local no. El test `un gasto en la nube queda pendiente hasta que Firestore lo confirma` lo cubre. En el teléfono, el primer gasto sin red se hizo con la pantalla vieja, que siempre decía Sincronizado. Falta ver la palabra Pendiente en el detalle y que pase a Sincronizado al volver la red.
-- Persistencia de Firestore: `Settings(persistenceEnabled: true)` al arrancar. Si la lectura de integrantes o gastos falla sin red, se usa la caché para no tumbar la lista.
+- Dictado: `speech_to_text` pide el micrófono, escucha en es-SV (o es) y en inglés, y abre Nuevo gasto con monto y concepto. No guarda solo. Permiso denegado, sin red y frase sin monto tienen aviso. Hay que decirlo en voz alta y pulsar Guardar.
+- QR: la invitación muestra el código del viaje. Escanear usa `mobile_scanner` y la misma unión que el código escrito. Un QR sin código, uno inválido o la cámara denegada tienen aviso.
+- Compartir: WhatsApp y Enlace mandan el código por la hoja del sistema. Liquidar y el resumen mandan el texto de la liquidación, con «Efectivo del grupo». El PDF sigue siendo el aviso de Pro. No se genera una imagen.
+- Permisos: `RECORD_AUDIO` y `CAMERA` en el AndroidManifest. En iOS, micrófono, reconocimiento de voz y cámara en `Info.plist`.
+- Google: el botón abre la pantalla de Google. Falta elegir una cuenta en el emulador.
+- Recuperar contraseña y eliminar cuenta (con la contraseña otra vez). No borrar `pruebakaval1210@gmail.com`.
+- Ver la marca Pendiente en el detalle con un gasto nuevo en modo avión, y Sincronizado al volver la red.
 
 ## 3. Qué falta
 
-- Agregar una cuenta de Google en el Pixel 7 y terminar ese inicio. Los pasos están en el mensaje de esta sesión.
-- Apple, en un iPhone, con la capacidad Sign in with Apple en Xcode.
-- Abrir el correo de recuperar contraseña.
-- Eliminar una cuenta de prueba (Ana u otra nueva), no la de Laura.
-- En la consola, abrir `eventos/evento-1791914331113` y el gasto de $36 en `eventos/tunco-p5RifdGW02hRQcIhaMyod0uhQlI2/gastos`.
-- Ver en el detalle la marca Pendiente con un gasto nuevo en modo avión, y Sincronizado al quitar el modo avión.
-- Fase 3: dictado real, QR y compartir. En Efectivo del grupo, un aporte nuevo sigue abriendo el formulario de gasto.
+- Probar en el Pixel 7 el dictado, el QR y compartir. El emulador tiene que aceptar el micrófono y la cámara.
+- Agregar una cuenta de Google en el emulador y terminar ese inicio.
+- Apple, en un iPhone, con Sign in with Apple en Xcode.
+- Abrir el correo de recuperar contraseña y borrar solo una cuenta de prueba.
+- En la consola, abrir `eventos/evento-1791914331113` y el gasto de $36.
+- En Efectivo del grupo, un aporte nuevo sigue abriendo el formulario de gasto.
 - `google-services.json` y `GoogleService-Info.plist` no van en git.
 
 ## 4. Porcentaje
 
-- Fase 2: **cerca del 90%**. Correo, segunda cuenta, código, reglas, evento a mano y un gasto que sobrevivió al modo avión ya se vieron. Siguen Google completo, el correo de recuperar, borrar una cuenta y la marca Pendiente en pantalla.
-- Producto completo: **cerca del 80%**. Faltan dictado, QR y compartir de verdad, y Apple en un iPhone.
+- Fase 2: **cerca del 90%**. Siguen Google completo, el correo de recuperar, borrar una cuenta y la marca Pendiente en pantalla.
+- Fase 3: **el código está**. Falta verlo en el teléfono: micrófono, cámara y la hoja de compartir.
+- Producto completo: **cerca del 90%**. Además de esas pruebas, faltan la imagen o el PDF del resumen y Apple en un iPhone.
 
 ## 5. Calidad
 
 - `flutter analyze` (13 de octubre de 2026): **No issues found.**
-- `flutter test`: **22 pasaron.** 7 de liquidación, 4 de red, 3 de mensajes de sesión y 8 de repositorios y sincronización.
+- `flutter test`: **30 pasaron.** 7 de liquidación, 4 de red, 3 de mensajes de sesión, 8 de repositorios y 8 de voz, idioma y QR.
 - JDK de Flutter: Microsoft OpenJDK 21 en `C:\Users\OMEN\.jdks\microsoft-jdk-21\jdk-21.0.12.1+1`.
 
 ## 6. Siguientes pasos
 
-1. Agregar una cuenta de Google en el emulador y pulsar Google en el login.
-2. En el detalle de Tunco, modo avión, guardar un gasto con concepto claro y comprobar que dice Pendiente. Quitar el modo avión y esperar Sincronizado.
-3. En la consola, revisar la cena de prueba y el gasto de $36.
-4. Pedir el enlace de recuperar contraseña y abrirlo.
-5. Borrar solo una cuenta que se pueda perder.
-6. Apple, cuando haya un iPhone.
-7. Después: dictado, QR y compartir.
+1. En el Pixel 7, dictar «pagué 25 dólares de pupusas», revisar Nuevo gasto y guardar.
+2. En Invitar, mirar el QR. Con otra cuenta, Escanear código y entrar a Tunco.
+3. Compartir el código y, en Liquidar, compartir el resumen.
+4. Negar el micrófono y la cámara una vez, para leer los avisos.
+5. Lo que seguía de la fase 2: cuenta de Google en el emulador, correo de recuperar, y Pendiente en modo avión.

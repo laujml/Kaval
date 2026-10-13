@@ -110,7 +110,7 @@
   "tuEntre": "{nombre} (you)",
   "gastoGuardado": "Expense saved",
   "conceptoEjemplo": "Seafood dinner 🦐",
-  "escuchando": "LISTENING · 0:04",
+  "escuchando": "Listening…",
   "transcribiendo": "Transcribing on your device…",
   "cancelar": "Cancel",
   "listo": "Done",
@@ -178,7 +178,7 @@
   "conCodigo": "With the code they join and see the expenses right away.",
   "codigoEvento": "EVENT CODE",
   "copiado": "Code copied",
-  "expira": "Expires in 7 days · Scan it in the app or use the link.",
+  "expira": "Scan it in the app or share the code.",
   "whatsapp": "WhatsApp",
   "enlace": "Link",
   "porNombre": "+ By name",
@@ -268,5 +268,31 @@
   "tuncoCargado": "Playa El Tunco is loaded",
   "agregarInvitado": "Add by name",
   "nombreInvitado": "Name of someone without an account",
-  "invitadoAgregado": "Done. That person is saved with just a name."
+  "invitadoAgregado": "Done. That person is saved with just a name.",
+  "vozPermiso": "Kaval needs the microphone to dictate an expense. Turn it on in the phone settings.",
+  "vozSinRed": "There's no connection to recognize speech. You can type the expense.",
+  "vozNoEntendida": "We didn't catch that. Say the amount and what it was, for example: I paid 25 dollars for pupusas.",
+  "vozNoDisponible": "This phone can't dictate right now. Type the expense.",
+  "vozRevisa": "Check the amount and the description before saving.",
+  "vozOido": "We heard: “{frase}”",
+  "@vozOido": {"placeholders": {"frase": {"type": "String"}}},
+  "escanearCodigo": "Scan code",
+  "camaraPermiso": "Kaval needs the camera to read a trip QR code. Turn it on in the phone settings.",
+  "qrInvalido": "That QR doesn't have a trip code.",
+  "apuntaQr": "Point at the trip QR code",
+  "qrEtiqueta": "QR code {codigo}",
+  "@qrEtiqueta": {"placeholders": {"codigo": {"type": "String"}}},
+  "mensajeInvitacion": "Join {evento} on Kaval. Code: {codigo}",
+  "@mensajeInvitacion": {"placeholders": {"evento": {"type": "String"}, "codigo": {"type": "String"}}},
+  "mensajeResumen": "{evento}\nTotal: {total}\n{pagos}\nGroup cash left: {sobrante}",
+  "@mensajeResumen": {
+    "placeholders": {
+      "evento": {"type": "String"},
+      "total": {"type": "String"},
+      "pagos": {"type": "String"},
+      "sobrante": {"type": "String"}
+    }
+  },
+  "nadieDebe": "Nobody owes anyone.",
+  "compartirFallo": "The share sheet couldn't open."
 }

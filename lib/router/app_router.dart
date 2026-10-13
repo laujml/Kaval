@@ -11,6 +11,7 @@ import '../features/gastos/confirmar_gasto_page.dart';
 import '../features/gastos/dictar_gasto_page.dart';
 import '../features/historial/historial_page.dart';
 import '../features/inicio/inicio_page.dart';
+import '../features/invitar/escanear_page.dart';
 import '../features/invitar/invitar_page.dart';
 import '../features/liquidacion/liquidacion_page.dart';
 import '../features/onboarding/bienvenida_page.dart';
@@ -45,6 +46,7 @@ final appRouter = GoRouter(
       builder: (context, state) => AgregarGastoPage(
         eventoId: state.pathParameters['id']!,
         gastoId: state.uri.queryParameters['editar'],
+        desdeVoz: state.uri.queryParameters['voz'] == '1',
       ),
     ),
     GoRoute(
@@ -78,5 +80,6 @@ final appRouter = GoRouter(
       path: '/evento/:id/invitar',
       builder: (context, state) => InvitarPage(eventoId: state.pathParameters['id']!),
     ),
+    GoRoute(path: '/escanear', builder: (context, state) => const EscanearPage()),
   ],
 );

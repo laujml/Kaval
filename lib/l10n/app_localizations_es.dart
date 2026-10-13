@@ -367,7 +367,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get conceptoEjemplo => 'Cena de mariscos 🦐';
 
   @override
-  String get escuchando => 'ESCUCHANDO · 0:04';
+  String get escuchando => 'Escuchando…';
 
   @override
   String get transcribiendo => 'Transcribiendo en tu dispositivo…';
@@ -606,8 +606,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get copiado => 'Código copiado';
 
   @override
-  String get expira =>
-      'Expira en 7 días · Escanéalo desde la app o usa el enlace.';
+  String get expira => 'Escanéalo desde la app o comparte el código.';
 
   @override
   String get whatsapp => 'WhatsApp';
@@ -900,4 +899,67 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get invitadoAgregado => 'Listo. Esa persona queda solo con su nombre.';
+
+  @override
+  String get vozPermiso =>
+      'Kaval necesita el micrófono para dictar el gasto. Actívalo en los ajustes del teléfono.';
+
+  @override
+  String get vozSinRed =>
+      'No hay conexión para reconocer la voz. Puedes escribir el gasto.';
+
+  @override
+  String get vozNoEntendida =>
+      'No entendimos la frase. Di el monto y el concepto, por ejemplo: pagué 25 dólares de pupusas.';
+
+  @override
+  String get vozNoDisponible =>
+      'Este teléfono no puede dictar ahora. Escribe el gasto.';
+
+  @override
+  String get vozRevisa => 'Revisa el monto y el concepto antes de guardar.';
+
+  @override
+  String vozOido(String frase) {
+    return 'Oímos: “$frase”';
+  }
+
+  @override
+  String get escanearCodigo => 'Escanear código';
+
+  @override
+  String get camaraPermiso =>
+      'Kaval necesita la cámara para leer el código QR. Actívala en los ajustes del teléfono.';
+
+  @override
+  String get qrInvalido => 'Ese QR no tiene un código de viaje.';
+
+  @override
+  String get apuntaQr => 'Apunta al código QR del viaje';
+
+  @override
+  String qrEtiqueta(String codigo) {
+    return 'Código QR $codigo';
+  }
+
+  @override
+  String mensajeInvitacion(String evento, String codigo) {
+    return 'Únete a $evento en Kaval. Código: $codigo';
+  }
+
+  @override
+  String mensajeResumen(
+    String evento,
+    String total,
+    String pagos,
+    String sobrante,
+  ) {
+    return '$evento\nTotal: $total\n$pagos\nEfectivo del grupo sobrante: $sobrante';
+  }
+
+  @override
+  String get nadieDebe => 'Nadie le debe a nadie.';
+
+  @override
+  String get compartirFallo => 'No se pudo abrir el menú para compartir.';
 }

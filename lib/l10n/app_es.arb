@@ -121,7 +121,7 @@
   "@tuEntre": {"placeholders": {"nombre": {"type": "String"}}},
   "gastoGuardado": "Gasto guardado",
   "conceptoEjemplo": "Cena de mariscos 🦐",
-  "escuchando": "ESCUCHANDO · 0:04",
+  "escuchando": "Escuchando…",
   "transcribiendo": "Transcribiendo en tu dispositivo…",
   "cancelar": "Cancelar",
   "listo": "Listo",
@@ -205,7 +205,7 @@
   "conCodigo": "Con el código se unen y ven los gastos al instante.",
   "codigoEvento": "CÓDIGO DEL EVENTO",
   "copiado": "Código copiado",
-  "expira": "Expira en 7 días · Escanéalo desde la app o usa el enlace.",
+  "expira": "Escanéalo desde la app o comparte el código.",
   "whatsapp": "WhatsApp",
   "enlace": "Enlace",
   "porNombre": "+ Por nombre",
@@ -297,5 +297,31 @@
   "tuncoCargado": "Playa El Tunco quedó cargado",
   "agregarInvitado": "Agregar por nombre",
   "nombreInvitado": "Nombre de quien no tiene cuenta",
-  "invitadoAgregado": "Listo. Esa persona queda solo con su nombre."
+  "invitadoAgregado": "Listo. Esa persona queda solo con su nombre.",
+  "vozPermiso": "Kaval necesita el micrófono para dictar el gasto. Actívalo en los ajustes del teléfono.",
+  "vozSinRed": "No hay conexión para reconocer la voz. Puedes escribir el gasto.",
+  "vozNoEntendida": "No entendimos la frase. Di el monto y el concepto, por ejemplo: pagué 25 dólares de pupusas.",
+  "vozNoDisponible": "Este teléfono no puede dictar ahora. Escribe el gasto.",
+  "vozRevisa": "Revisa el monto y el concepto antes de guardar.",
+  "vozOido": "Oímos: “{frase}”",
+  "@vozOido": {"placeholders": {"frase": {"type": "String"}}},
+  "escanearCodigo": "Escanear código",
+  "camaraPermiso": "Kaval necesita la cámara para leer el código QR. Actívala en los ajustes del teléfono.",
+  "qrInvalido": "Ese QR no tiene un código de viaje.",
+  "apuntaQr": "Apunta al código QR del viaje",
+  "qrEtiqueta": "Código QR {codigo}",
+  "@qrEtiqueta": {"placeholders": {"codigo": {"type": "String"}}},
+  "mensajeInvitacion": "Únete a {evento} en Kaval. Código: {codigo}",
+  "@mensajeInvitacion": {"placeholders": {"evento": {"type": "String"}, "codigo": {"type": "String"}}},
+  "mensajeResumen": "{evento}\nTotal: {total}\n{pagos}\nEfectivo del grupo sobrante: {sobrante}",
+  "@mensajeResumen": {
+    "placeholders": {
+      "evento": {"type": "String"},
+      "total": {"type": "String"},
+      "pagos": {"type": "String"},
+      "sobrante": {"type": "String"}
+    }
+  },
+  "nadieDebe": "Nadie le debe a nadie.",
+  "compartirFallo": "No se pudo abrir el menú para compartir."
 }

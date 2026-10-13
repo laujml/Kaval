@@ -1,6 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+
+import '../../core/compartir/compartir_texto.dart';
+import '../../core/compartir/texto_resumen.dart';
 
 import '../../core/liquidacion/liquidacion.dart';
 import '../../core/theme/kaval_colors.dart';
@@ -109,7 +114,7 @@ class LiquidacionPage extends StatelessWidget {
               child: BotonCoral(
                 texto: textos.compartirResumen,
                 icono: const Icon(Icons.chat_rounded, color: Colors.white),
-                onPressed: () => context.push('/evento/$eventoId/resumen'),
+                onPressed: () => unawaited(compartirTexto(context, textoResumen(textos, evento, resultado))),
               ),
             ),
           ],

@@ -67,14 +67,15 @@ Hecho:
 - Dio con interceptor, Control de errores y modo prueba.
 - Cuentas (correo, Google, Apple en iOS), recuperar contraseña, cerrar sesión y eliminar cuenta.
 - Firestore: usuarios, eventos, integrantes, gastos y aportes, en centavos. Persistencia sin conexión. La tarjeta dice Sincronizado o Pendiente.
-- Códigos de invitación (`TUNCO-7K2`) y unirse con el código. Quien no tiene cuenta solo tiene nombre.
+- Códigos de invitación (`TUNCO-7K2`) y unirse con el código o con el QR. Quien no tiene cuenta solo tiene nombre.
+- Dictado con el micrófono: la frase se convierte en monto y concepto, y el formulario de Nuevo gasto queda para revisar antes de guardar.
+- Compartir el código y el resumen de la liquidación con la hoja del sistema.
 - Opción para cargar el ejemplo de Playa El Tunco.
 
 Sigue simulado:
 
 - El `POST` y el `PUT` de un gasto van a `https://jsonplaceholder.typicode.com` para la demo. Si la llamada responde bien, el mismo gasto se guarda en Firestore cuando hay cuenta.
-- Dictar un gasto es una animación. No usa el micrófono.
-- Compartir y el QR no hablan con un servidor.
+- El PDF del resumen sigue siendo un aviso de Kaval Pro. Compartir manda el texto, no una imagen generada.
 
 ## Demo: interceptor y manejo de errores
 
