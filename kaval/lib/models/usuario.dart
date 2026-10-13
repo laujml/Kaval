@@ -1,4 +1,6 @@
-/// Cuenta con la que se entra a Kaval. En esta fase vive solo en memoria.
+import '../data/leer_mapa.dart';
+
+/// Cuenta con la que se entra a Kaval.
 class Usuario {
   const Usuario({
     required this.id,
@@ -26,6 +28,19 @@ class Usuario {
       nombre: nombre ?? this.nombre,
       correo: correo ?? this.correo,
       local: local ?? this.local,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {'nombre': nombre, 'correo': correo};
+  }
+
+  factory Usuario.fromMap(String id, Map<String, dynamic> mapa, {bool local = false}) {
+    return Usuario(
+      id: id,
+      nombre: textoDe(mapa['nombre']),
+      correo: textoDe(mapa['correo']),
+      local: local,
     );
   }
 }

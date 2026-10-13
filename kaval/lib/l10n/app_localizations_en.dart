@@ -686,14 +686,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eliminarCuenta => 'Delete account';
 
   @override
-  String get eliminarPregunta => 'Delete this account from the device?';
+  String get eliminarPregunta =>
+      'This deletes your Kaval account and cannot be undone.';
 
   @override
   String get eliminar => 'Delete';
 
   @override
   String get privacidadCuerpo =>
-      'Kaval stores the text you dictate, never the audio. In this phase everything stays on the phone.';
+      'Kaval stores the text you dictate, never the audio. With an account, trips live in the cloud and on this phone. The local profile stays on this device only.';
 
   @override
   String get proAviso =>
@@ -819,4 +820,63 @@ class AppLocalizationsEn extends AppLocalizations {
   String falloArmado(String modo) {
     return 'Ready. The next operation will fail: $modo.';
   }
+
+  @override
+  String get credencialesInvalidas => 'That email or password doesn\'t match.';
+
+  @override
+  String get correoEnUso => 'That email already has an account.';
+
+  @override
+  String get contrasenaDebil => 'Choose a stronger password.';
+
+  @override
+  String get demasiadosIntentos =>
+      'Too many attempts. Wait a moment and try again.';
+
+  @override
+  String get redAuth => 'You\'re offline. Check your network and try again.';
+
+  @override
+  String get firebaseSinConfigurar =>
+      'Firebase isn\'t connected in this project yet. You can still use the local profile.';
+
+  @override
+  String get sesionReciente =>
+      'For safety, sign in again and then delete the account.';
+
+  @override
+  String get cuentaDesactivada => 'This account is disabled.';
+
+  @override
+  String get operacionNoPermitida =>
+      'That sign-in method isn\'t enabled in Firebase.';
+
+  @override
+  String get errorAuth => 'Sign-in didn\'t go through. Please try again.';
+
+  @override
+  String get recuperarTitulo => 'Reset password';
+
+  @override
+  String get enviarEnlace => 'Send link';
+
+  @override
+  String get correoEnviado =>
+      'We sent a link so you can choose a new password.';
+
+  @override
+  String get cargarTunco => 'Load the Playa El Tunco example';
+
+  @override
+  String get tuncoCargado => 'Playa El Tunco is loaded';
+
+  @override
+  String get agregarInvitado => 'Add by name';
+
+  @override
+  String get nombreInvitado => 'Name of someone without an account';
+
+  @override
+  String get invitadoAgregado => 'Done. That person is saved with just a name.';
 }

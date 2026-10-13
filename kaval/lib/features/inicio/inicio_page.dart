@@ -116,7 +116,29 @@ class InicioPage extends StatelessWidget {
             SizedBox(
               height: 300,
               child: eventos.isEmpty
-                  ? Center(child: Text(textos.sinEventos, style: KavalTexto.cuerpo()))
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(textos.sinEventos, textAlign: TextAlign.center, style: KavalTexto.cuerpo()),
+                          TextButton(
+                            onPressed: () async {
+                              try {
+                                await context.read<KavalState>().cargarEjemploTunco();
+                                if (context.mounted) mostrarAviso(context, textos.tuncoCargado);
+                              } catch (error) {
+                                debugPrint('[kaval] no se pudo cargar Tunco: $error');
+                                if (context.mounted) mostrarAviso(context, textos.errorGenerico);
+                              }
+                            },
+                            child: Text(
+                              textos.cargarTunco,
+                              style: KavalTexto.cuerpo(weight: FontWeight.w800, color: KavalColors.coral),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
                   : ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: eventos.length,

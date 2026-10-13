@@ -43,6 +43,10 @@ key.properties
 **/google-services.json
 **/GoogleService-Info.plist
 local.properties
+*-firebase-adminsdk-*.json
+**/serviceAccount*.json
+.firebase/
+firebase-debug.log
 
 # Symbolication related
 app.*.symbols

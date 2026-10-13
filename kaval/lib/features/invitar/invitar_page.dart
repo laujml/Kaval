@@ -8,6 +8,7 @@ import '../../core/widgets/aviso.dart';
 import '../../core/widgets/boton_coral.dart';
 import '../../core/widgets/kaval_avatar.dart';
 import '../../core/widgets/logo_kaval.dart';
+import '../../core/widgets/campo_kaval.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/integrante.dart';
 import '../../state/kaval_state.dart';
@@ -104,6 +105,8 @@ class InvitarPage extends StatelessWidget {
                 subtitle: Text(_detalle(textos, persona, estado.usuario.id), style: KavalTexto.cuerpo(size: 12)),
                 trailing: _estado(textos, persona, unidos),
               ),
+            const SizedBox(height: 8),
+            _AgregarPorNombre(eventoId: eventoId),
           ],
         ),
       ),
@@ -163,6 +166,75 @@ class _QrFalso extends StatelessWidget {
                   ),
               ],
             ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AgregarPorNombre extends StatefulWidget {
+  const _AgregarPorNombre({required this.eventoId});
+
+  final String eventoId;
+
+  @override
+  State<_AgregarPorNombre> createState() => _AgregarPorNombreState();
+}
+
+class _AgregarPorNombreState extends State<_AgregarPorNombre> {
+  final _formKey = GlobalKey<FormState>();
+  final _nombre = TextEditingController();
+  final _foco = FocusNode();
+
+  @override
+  void dispose() {
+    _nombre.dispose();
+    _foco.dispose();
+    super.dispose();
+  }
+
+  void _agregar() {
+    final textos = AppLocalizations.of(context);
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    context.read<KavalState>().agregarIntegrante(
+          widget.eventoId,
+          Integrante(
+            id: 'invitado-${DateTime.now().microsecondsSinceEpoch}',
+            nombre: _nombre.text.trim(),
+            colorFondo: 0xFFFFE8C2,
+            colorInicial: 0xFFE0A100,
+            estado: EstadoUnion.soloNombre,
+          ),
+        );
+    _nombre.clear();
+    mostrarAviso(context, textos.invitadoAgregado);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textos = AppLocalizations.of(context);
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(textos.agregarInvitado, style: KavalTexto.titulo(size: 16)),
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: _nombre,
+            focusNode: _foco,
+            textCapitalization: TextCapitalization.words,
+            textInputAction: TextInputAction.done,
+            onFieldSubmitted: (_) => _agregar(),
+            decoration: decoracionCampo(hint: textos.nombreInvitado),
+            validator: (valor) {
+              final texto = valor?.trim() ?? '';
+              if (texto.length < 2) return textos.nombreCorto;
+              return null;
+            },
+          ),
+          const SizedBox(height: 8),
+          BotonCoral(texto: textos.agregarInvitado, onPressed: _agregar),
         ],
       ),
     );

@@ -1,9 +1,10 @@
-import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/red/cliente_api.dart';
+import '../../core/auth/firebase_no_configurado.dart';
+import '../../core/auth/mensajes_auth.dart';
 import '../../core/theme/kaval_colors.dart';
 import '../../core/theme/kaval_texto.dart';
 import '../../core/widgets/aviso.dart';
@@ -11,9 +12,10 @@ import '../../core/widgets/boton_coral.dart';
 import '../../core/widgets/campo_kaval.dart';
 import '../../core/widgets/ilustraciones.dart';
 import '../../core/widgets/logo_kaval.dart';
+import '../../data/servicio_auth.dart';
 import '../../l10n/app_localizations.dart';
+import '../../models/usuario.dart';
 import '../../state/kaval_state.dart';
-import '../errores/control_errores_page.dart';
 
 /// Registro de Kaval, traído de la semana 7.
 /// Se conservan el Form, la GlobalKey, los validators y el salto entre campos.
@@ -40,7 +42,6 @@ class _RegistroPageState extends State<RegistroPage> {
   String _nombre = '';
   String _correo = '';
   String _contrasena = '';
-  String _confirmacion = '';
 
   bool _ocultarContrasena = true;
   bool _ocultarConfirmacion = true;
@@ -73,48 +74,113 @@ class _RegistroPageState extends State<RegistroPage> {
     if (formulario == null || !formulario.validate() || _enviando) return;
     formulario.save();
     final textos = AppLocalizations.of(context);
-    final estado = context.read<KavalState>();
-    if (_crearCuenta) {
-      assert(_contrasena.isNotEmpty && _confirmacion == _contrasena);
-      estado.entrar(nombre: _nombre, correo: _correo);
-      mostrarAviso(context, textos.cuentaCreada);
-      context.go('/inicio');
-      return;
-    }
+    final auth = context.read<ServicioAuth>();
     setState(() => _enviando = true);
-    final fallo = estado.consumirFallo();
-    final cliente = context.read<ClienteApi>();
     try {
-      // El login demo sigue aceptando cualquier correo válido. El POST solo prueba la red.
-      await cliente.iniciarSesion(correo: _correo, fallo: fallo);
+      final Usuario cuenta;
+      if (_crearCuenta) {
+        cuenta = await auth.registrar(
+          nombre: _nombre,
+          correo: _correo,
+          contrasena: _contrasena,
+        );
+      } else {
+        cuenta = await auth.entrarConCorreo(correo: _correo, contrasena: _contrasena);
+      }
       if (!mounted) return;
-      estado.entrar(nombre: 'Laura Angel', correo: _correo);
-      mostrarAviso(context, textos.sesionIniciada);
+      await context.read<KavalState>().entrarEnLaNube(cuenta);
+      if (!mounted) return;
+      mostrarAviso(context, _crearCuenta ? textos.cuentaCreada : textos.sesionIniciada);
       context.go('/inicio');
-    } on DioException catch (error) {
+    } on FirebaseAuthException catch (error) {
       if (!mounted) return;
       setState(() => _enviando = false);
-      _alFallarLogin(error, textos);
+      mostrarAviso(context, mensajeAuth(error, textos));
+    } on FirebaseNoConfigurado catch (error) {
+      if (!mounted) return;
+      setState(() => _enviando = false);
+      mostrarAviso(context, mensajeAuth(error, textos));
     }
   }
 
-  void _alFallarLogin(DioException error, AppLocalizations textos) {
-    switch (clasificar(error)) {
-      case TipoFallo.sinRed:
-        mostrarAviso(
-          context,
-          textos.sinConexionAviso,
-          accion: textos.perfilLocalAccion,
-          alAccionar: _perfilLocal,
+  Future<void> _conGoogle() {
+    return _entrarCon(() => context.read<ServicioAuth>().entrarConGoogle());
+  }
+
+  Future<void> _conApple() {
+    return _entrarCon(() => context.read<ServicioAuth>().entrarConApple());
+  }
+
+  Future<void> _entrarCon(Future<Usuario?> Function() accion) async {
+    final textos = AppLocalizations.of(context);
+    try {
+      final cuenta = await accion();
+      if (!mounted || cuenta == null) return;
+      await context.read<KavalState>().entrarEnLaNube(cuenta);
+      if (!mounted) return;
+      context.go('/inicio');
+    } catch (error) {
+      if (!mounted) return;
+      final mensaje = mensajeAuth(error, textos);
+      if (mensaje.isEmpty) return;
+      mostrarAviso(context, mensaje);
+    }
+  }
+
+  Future<void> _recuperar() async {
+    final textos = AppLocalizations.of(context);
+    final correo = TextEditingController(text: _correo);
+    final foco = FocusNode();
+    final formKey = GlobalKey<FormState>();
+    final enviar = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: KavalColors.crema,
+          title: Text(textos.recuperarTitulo, style: KavalTexto.titulo(size: 18)),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              controller: correo,
+              focusNode: foco,
+              autofocus: true,
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (_) {
+                if (formKey.currentState!.validate()) Navigator.pop(dialogContext, true);
+              },
+              decoration: decoracionCampo(hint: textos.correo),
+              validator: (valor) {
+                final texto = valor?.trim() ?? '';
+                if (texto.isEmpty) return textos.correoObligatorio;
+                if (!_correoRegex.hasMatch(texto)) return textos.correoInvalido;
+                return null;
+              },
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: Text(textos.cancelar)),
+            TextButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) Navigator.pop(dialogContext, true);
+              },
+              child: Text(textos.enviarEnlace),
+            ),
+          ],
         );
-      case TipoFallo.espera:
-        context.push('/errores/espera', extra: PasoError(alReintentar: _enviar));
-      case TipoFallo.sesion:
-        context.push('/errores/sesion');
-      case TipoFallo.rechazo:
-        mostrarAviso(context, mensajeRechazo(error, textos.datosRechazados));
-      case TipoFallo.otro:
-        mostrarAviso(context, textos.errorGenerico);
+      },
+    );
+    final escrito = correo.text.trim();
+    correo.dispose();
+    foco.dispose();
+    if (enviar != true || !mounted) return;
+    try {
+      await context.read<ServicioAuth>().recuperar(escrito);
+      if (!mounted) return;
+      mostrarAviso(context, textos.correoEnviado);
+    } catch (error) {
+      if (!mounted) return;
+      mostrarAviso(context, mensajeAuth(error, textos));
     }
   }
 
@@ -323,13 +389,12 @@ class _RegistroPageState extends State<RegistroPage> {
                   if (valor != _passwordController.text) return textos.contrasenasNoCoinciden;
                   return null;
                 },
-                onSaved: (valor) => _confirmacion = valor ?? '',
               ),
             ] else ...[
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: () => mostrarAviso(context, textos.fase2),
+                  onPressed: _recuperar,
                   child: Text(
                     textos.olvidaste,
                     style: KavalTexto.cuerpo(
@@ -410,20 +475,27 @@ class _RegistroPageState extends State<RegistroPage> {
   }
 
   Widget _botonesSociales(AppLocalizations textos) {
+    final auth = context.read<ServicioAuth>();
     return Row(
       children: [
-        Expanded(child: _social(textos.google, const _LogoGoogle())),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _social(textos.apple, const Icon(Icons.apple, color: KavalColors.marino, size: 22)),
-        ),
+        Expanded(child: _social(textos.google, const _LogoGoogle(), _conGoogle)),
+        if (auth.appleDisponible) ...[
+          const SizedBox(width: 12),
+          Expanded(
+            child: _social(
+              textos.apple,
+              const Icon(Icons.apple, color: KavalColors.marino, size: 22),
+              _conApple,
+            ),
+          ),
+        ],
       ],
     );
   }
 
-  Widget _social(String texto, Widget icono) {
+  Widget _social(String texto, Widget icono, Future<void> Function() alTocar) {
     return OutlinedButton(
-      onPressed: () => mostrarAviso(context, AppLocalizations.of(context).fase2),
+      onPressed: alTocar,
       style: OutlinedButton.styleFrom(
         backgroundColor: Colors.white,
         foregroundColor: KavalColors.marino,

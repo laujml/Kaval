@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/invitaciones/codigo_evento.dart';
 import '../../core/theme/kaval_colors.dart';
 import '../../core/theme/kaval_texto.dart';
 import '../../core/utils/fechas.dart';
@@ -116,7 +117,7 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
       inicio: _inicio,
       fin: _fin,
       portada: _portada,
-      codigo: 'NUEVO-${id.substring(id.length - 3).toUpperCase()}',
+      codigo: codigoDeEvento(_nombre.text),
       emoji: _emoji(_portada),
       integrantes: _personas,
       gastos: const [],

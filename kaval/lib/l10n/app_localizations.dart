@@ -1325,7 +1325,7 @@ abstract class AppLocalizations {
   /// No description provided for @eliminarPregunta.
   ///
   /// In es, this message translates to:
-  /// **'¿Eliminar la cuenta de este dispositivo?'**
+  /// **'Esto elimina tu cuenta de Kaval y no se puede deshacer.'**
   String get eliminarPregunta;
 
   /// No description provided for @eliminar.
@@ -1337,7 +1337,7 @@ abstract class AppLocalizations {
   /// No description provided for @privacidadCuerpo.
   ///
   /// In es, this message translates to:
-  /// **'Kaval guarda el texto de lo que dictas, nunca el audio. En esta fase todo vive en el teléfono.'**
+  /// **'Kaval guarda el texto de lo que dictas, nunca el audio. Con una cuenta, los viajes viven en la nube y también en el teléfono. El perfil local se queda solo en este aparato.'**
   String get privacidadCuerpo;
 
   /// No description provided for @proAviso.
@@ -1567,6 +1567,114 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Listo. La próxima operación fallará: {modo}.'**
   String falloArmado(String modo);
+
+  /// No description provided for @credencialesInvalidas.
+  ///
+  /// In es, this message translates to:
+  /// **'El correo o la contraseña no coinciden.'**
+  String get credencialesInvalidas;
+
+  /// No description provided for @correoEnUso.
+  ///
+  /// In es, this message translates to:
+  /// **'Ese correo ya tiene una cuenta.'**
+  String get correoEnUso;
+
+  /// No description provided for @contrasenaDebil.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una contraseña más segura.'**
+  String get contrasenaDebil;
+
+  /// No description provided for @demasiadosIntentos.
+  ///
+  /// In es, this message translates to:
+  /// **'Demasiados intentos. Espera un momento y vuelve a probar.'**
+  String get demasiadosIntentos;
+
+  /// No description provided for @redAuth.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay conexión. Revisa tu red e inténtalo otra vez.'**
+  String get redAuth;
+
+  /// No description provided for @firebaseSinConfigurar.
+  ///
+  /// In es, this message translates to:
+  /// **'Falta conectar Firebase en este proyecto. Mientras tanto puedes usar el perfil local.'**
+  String get firebaseSinConfigurar;
+
+  /// No description provided for @sesionReciente.
+  ///
+  /// In es, this message translates to:
+  /// **'Por seguridad, vuelve a entrar y luego elimina la cuenta.'**
+  String get sesionReciente;
+
+  /// No description provided for @cuentaDesactivada.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta cuenta está desactivada.'**
+  String get cuentaDesactivada;
+
+  /// No description provided for @operacionNoPermitida.
+  ///
+  /// In es, this message translates to:
+  /// **'Esa forma de entrar no está activada en Firebase.'**
+  String get operacionNoPermitida;
+
+  /// No description provided for @errorAuth.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo completar el acceso. Inténtalo otra vez.'**
+  String get errorAuth;
+
+  /// No description provided for @recuperarTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Recuperar contraseña'**
+  String get recuperarTitulo;
+
+  /// No description provided for @enviarEnlace.
+  ///
+  /// In es, this message translates to:
+  /// **'Enviar enlace'**
+  String get enviarEnlace;
+
+  /// No description provided for @correoEnviado.
+  ///
+  /// In es, this message translates to:
+  /// **'Te enviamos un enlace para elegir una contraseña nueva.'**
+  String get correoEnviado;
+
+  /// No description provided for @cargarTunco.
+  ///
+  /// In es, this message translates to:
+  /// **'Cargar ejemplo de Playa El Tunco'**
+  String get cargarTunco;
+
+  /// No description provided for @tuncoCargado.
+  ///
+  /// In es, this message translates to:
+  /// **'Playa El Tunco quedó cargado'**
+  String get tuncoCargado;
+
+  /// No description provided for @agregarInvitado.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar por nombre'**
+  String get agregarInvitado;
+
+  /// No description provided for @nombreInvitado.
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre de quien no tiene cuenta'**
+  String get nombreInvitado;
+
+  /// No description provided for @invitadoAgregado.
+  ///
+  /// In es, this message translates to:
+  /// **'Listo. Esa persona queda solo con su nombre.'**
+  String get invitadoAgregado;
 }
 
 class _AppLocalizationsDelegate

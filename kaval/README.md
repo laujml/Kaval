@@ -17,30 +17,64 @@ flutter run -d emulator-5554
 emulator -avd Pixel_7 -no-snapshot-load
 ```
 
-## Login demo
+## Entrar
 
-Cualquier correo válido y cualquier contraseña. No se comprueba la contraseña contra un servidor. Antes de entrar, la app hace un `POST /posts` de prueba para ver si hay red.
+Con Firebase configurado: correo y contraseña, Google y, solo en iPhone, Apple. Desde el login se puede pedir el enlace para recuperar la contraseña. En Perfil se cierra la sesión y se elimina la cuenta.
 
-Google, Apple y “usar perfil local” no crean una cuenta real. El perfil local entra sin llamar a la red.
+**Usar perfil local** sigue siendo el acceso de prueba. Entra como Laura, carga Playa El Tunco y Ruta de las Flores en el teléfono y no llama a Firestore. Sirve para ensayar la demo de errores sin una cuenta.
 
-## Fase 1: qué está hecho y qué es simulado
+En esta máquina el proyecto `kaval-4216d` ya está conectado. En un clon nuevo, los archivos de cliente no vienen en git: hay que repetir los pasos de abajo o la app avisa que falta conectar Firebase. El perfil local igual entra.
 
-Hecho en esta fase:
+## Firebase (una sola vez)
 
-- Las pantallas del recorrido (bienvenida, login, inicio, eventos, gasto, liquidación, efectivo, resumen, invitar y perfil).
-- Liquidación en centavos, con tests.
-- Textos en español e inglés (selector ES/EN en Perfil).
-- Formularios con validación.
-- Dio con interceptor, manejo de errores y modo prueba para la demo.
+No descargues la llave privada de la cuenta de servicio. Si la consola te ofrece un JSON de admin, no lo guardes en el repo. El `.gitignore` ya deja fuera `google-services.json`, `GoogleService-Info.plist`, `*-firebase-adminsdk-*.json` y `serviceAccount`.
 
-Simulado, solo en memoria:
+1. Entra a [Firebase console](https://console.firebase.google.com) y crea un proyecto, por ejemplo `kaval`.
+2. Agrega una app Android con el paquete `com.kaval.app.kaval`.
+3. Agrega una app iOS con el bundle id `com.kaval.app.kaval`.
+4. En Authentication → Sign-in method activa Correo/contraseña, Google y Apple.
+5. Crea la base Cloud Firestore.
+6. En esta carpeta:
 
-- El login no autentica. Al cerrar la app se pierden los gastos y eventos creados en la sesión.
-- Los viajes de ejemplo (Playa El Tunco y Ruta de las Flores) vienen cargados.
-- El `POST` y el `PUT` van a `https://jsonplaceholder.typicode.com`. Un 201 o un 200 solo confirman la llamada; el gasto de verdad queda en la app.
-- Dictar un gasto es una animación con una frase fija. No usa el micrófono.
-- Compartir, el QR de invitación, sincronizar y eliminar cuenta no hablan con un servidor.
-- No hay Firebase.
+```text
+dart pub global activate flutterfire_cli
+firebase login
+flutterfire configure --platforms=android,ios
+```
+
+Ese comando reemplaza `lib/firebase_options.dart` y escribe los archivos de cliente en el disco. Esos archivos de cliente no se suben: ya están ignorados. Vuelve a correr la app después.
+
+7. Para Google en Android, el SHA-1 de debug se agrega en la ficha de la app Android. Desde `kaval/android`:
+
+```text
+.\gradlew signingReport
+```
+
+8. En el iPhone, en Xcode, activa la capacidad Sign in with Apple.
+9. Publica las reglas (solo quien está en `integranteIds` lee y escribe el evento):
+
+```text
+firebase deploy --only firestore:rules
+```
+
+Las reglas están en `firestore.rules` y se explican ahí con comentarios.
+
+## Qué está hecho y qué sigue simulado
+
+Hecho:
+
+- Pantallas del recorrido, liquidación en centavos, español e inglés, formularios.
+- Dio con interceptor, Control de errores y modo prueba.
+- Cuentas (correo, Google, Apple en iOS), recuperar contraseña, cerrar sesión y eliminar cuenta.
+- Firestore: usuarios, eventos, integrantes, gastos y aportes, en centavos. Persistencia sin conexión. La tarjeta dice Sincronizado o Pendiente.
+- Códigos de invitación (`TUNCO-7K2`) y unirse con el código. Quien no tiene cuenta solo tiene nombre.
+- Opción para cargar el ejemplo de Playa El Tunco.
+
+Sigue simulado:
+
+- El `POST` y el `PUT` de un gasto van a `https://jsonplaceholder.typicode.com` para la demo. Si la llamada responde bien, el mismo gasto se guarda en Firestore cuando hay cuenta.
+- Dictar un gasto es una animación. No usa el micrófono.
+- Compartir y el QR no hablan con un servidor.
 
 ## Demo: interceptor y manejo de errores
 
@@ -54,10 +88,10 @@ Esos renglones solo salen en debug. La sesión de `flutter run` ya lo es.
 
 La interfaz no trata todos los fallos igual:
 
-| Fallo | Qué hace la app |
+| Fallo | Qué hace la app al guardar o editar un gasto |
 |---|---|
-| Timeout (`connectionTimeout`, `receiveTimeout` o `sendTimeout`) | En **Agregar gasto**, un aviso con **Reintentar**. Lo escrito no se borra. En el **login**, abre la pantalla de espera. |
-| Sin red (`connectionError`) | En el **login**, un aviso que ofrece el perfil local. En **Agregar gasto**, la pantalla Sin conexión. |
+| Timeout (`connectionTimeout`, `receiveTimeout` o `sendTimeout`) | Un aviso con **Reintentar**. Lo escrito no se borra. |
+| Sin red (`connectionError`) | Pantalla Sin conexión. **Seguir sin conexión** guarda el gasto en el teléfono y, si hay cuenta, lo deja pendiente de subir. |
 | 400 o 422 | El mensaje del servidor queda en el formulario, junto al concepto (o al monto, si la respuesta lo nombra). El gasto no se guarda. |
 | 401 | Pantalla de sesión vencida. **Iniciar sesión** vuelve al login. |
 
@@ -72,10 +106,10 @@ La interfaz no trata todos los fallos igual:
 ### Pasos
 
 1. En la terminal donde corre `flutter run`, pulsa **R** para cargar el último código. Deja esa consola visible: ahí aparecen los logs `[kaval]`.
-2. Entra con el login demo (correo válido y cualquier contraseña). Debes ver `→ POST` y `← 201`.
+2. Entra con **Usar perfil local** (o con tu cuenta, si Firebase ya está configurado).
 3. Ve a **Perfil**, baja hasta **Modo prueba** y toca un chip.
 4. Abre un viaje, **Agregar gasto** y pulsa **Guardar gasto**.
-5. Mira la consola y la pantalla: el aviso, el mensaje en el campo o Control de errores, según el chip.
+5. Mira la consola y la pantalla: el aviso, el mensaje en el campo o Control de errores, según el chip. Sin un chip, un guardado normal muestra `→ POST` y `← 201`, y el gasto queda guardado.
 
 Cada chip se usa **una sola vez**. Si guardas otra vez sin elegir un chip nuevo, la llamada entra normal y el gasto sí se guarda.
 

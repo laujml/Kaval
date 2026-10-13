@@ -1,20 +1,27 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../core/liquidacion/liquidacion.dart';
 import '../core/red/cliente_api.dart';
 import '../data/datos_ejemplo.dart';
+import '../data/repositorios/repositorio_datos.dart';
 import '../models/aporte_efectivo.dart';
 import '../models/evento.dart';
 import '../models/gasto.dart';
+import '../models/integrante.dart';
 import '../models/transferencia.dart';
 import '../models/usuario.dart';
 
 /// Estado de la materia: un ChangeNotifier que las pantallas escuchan.
 class KavalState extends ChangeNotifier {
-  KavalState()
+  KavalState({this.datos})
       : usuario = usuarioDemo(),
-        eventos = eventosIniciales(),
+        eventos = const [],
         borrador = borradorGasolina();
+
+  final RepositorioDatos? datos;
+  StreamSubscription<List<Evento>>? _nube;
 
   Locale locale = const Locale('es');
   Usuario usuario;
@@ -22,6 +29,7 @@ class KavalState extends ChangeNotifier {
   Gasto borrador;
   bool sincronizarNube = true;
   PortadaEvento? filtro;
+  bool _sesionNube = false;
 
   /// Se gasta en la siguiente llamada y vuelve a ninguno.
   FalloForzado falloForzado = FalloForzado.ninguno;
@@ -30,6 +38,8 @@ class KavalState extends ChangeNotifier {
   final Set<String> _pagadas = {};
 
   String get idioma => locale.languageCode;
+
+  bool get enLaNube => _sesionNube && datos != null;
 
   void cambiarIdioma(Locale value) {
     if (locale == value) return;
@@ -45,6 +55,13 @@ class KavalState extends ChangeNotifier {
   void alternarSincronizacion(bool valor) {
     sincronizarNube = valor;
     notifyListeners();
+    final db = datos?.db;
+    if (db == null || !enLaNube) return;
+    if (valor) {
+      unawaited(db.enableNetwork());
+    } else {
+      unawaited(db.disableNetwork());
+    }
   }
 
   void prepararFallo(FalloForzado fallo) {
@@ -81,7 +98,7 @@ class KavalState extends ChangeNotifier {
 
   int saldoEn(Evento evento) => calcularLiquidacion(evento).saldoDe(usuario.id);
 
-  /// Suma de saldos a favor, en todos los viajes. En el inicio es $15.25.
+  /// Suma de saldos a favor, en todos los viajes. En el perfil local incluye Flores.
   int get teDeben {
     var suma = 0;
     for (final evento in eventos) {
@@ -104,25 +121,96 @@ class KavalState extends ChangeNotifier {
   int get balanceGeneral => teDeben - debes;
 
   void entrar({required String nombre, required String correo, bool local = false}) {
+    _soltarNube();
+    _sesionNube = false;
     final limpio = nombre.trim().isEmpty ? usuario.nombre : nombre.trim();
     usuario = Usuario(
-      id: usuario.id,
+      id: local ? idLaura : usuario.id,
       nombre: limpio,
       correo: correo.trim().isEmpty ? usuario.correo : correo.trim(),
       local: local,
     );
+    if (local) eventos = eventosIniciales();
     notifyListeners();
   }
 
-  void crearEvento(Evento evento) {
-    eventos = [evento, ...eventos];
+  Future<void> entrarEnLaNube(Usuario cuenta) async {
+    _soltarNube();
+    _sesionNube = datos != null;
+    usuario = cuenta;
+    eventos = const [];
     notifyListeners();
+    final nube = datos;
+    if (nube == null) return;
+    await nube.usuarios.guardar(cuenta);
+    _nube = nube.eventos.escuchar(cuenta.id).listen(
+      (lista) {
+        eventos = lista;
+        notifyListeners();
+      },
+      onError: (Object error) {
+        debugPrint('[kaval] no se pudieron leer los eventos: $error');
+      },
+    );
+  }
+
+  Future<void> salir() async {
+    _soltarNube();
+    _sesionNube = false;
+    usuario = usuarioDemo();
+    eventos = const [];
+    notifyListeners();
+  }
+
+  Future<void> borrarCuentaEnLaNube() async {
+    final nube = datos;
+    if (!enLaNube || nube == null) return;
+    await nube.usuarios.borrar(usuario.id);
+  }
+
+  Future<void> cargarEjemploTunco() async {
+    if (!enLaNube) {
+      final evento = eventoPlayaTunco();
+      eventos = [evento, ...eventos.where((actual) => actual.id != evento.id)];
+      notifyListeners();
+      return;
+    }
+    await datos!.cargarTunco(usuario);
+  }
+
+  void crearEvento(Evento evento) {
+    var listo = evento;
+    if (enLaNube && listo.integrante(usuario.id) == null) {
+      listo = listo.copyWith(
+        integrantes: [
+          Integrante(
+            id: usuario.id,
+            nombre: usuario.primerNombre,
+            colorFondo: 0xFFFFD9E0,
+            colorInicial: 0xFFE56B8A,
+            estado: EstadoUnion.admin,
+          ),
+          ...listo.integrantes,
+        ],
+      );
+    }
+    eventos = [listo, ...eventos];
+    notifyListeners();
+    if (enLaNube) unawaited(datos!.eventos.guardar(listo, duenoId: usuario.id));
+  }
+
+  void agregarIntegrante(String eventoId, Integrante persona) {
+    _reemplazar(eventoId, (evento) {
+      return evento.copyWith(integrantes: [...evento.integrantes, persona]);
+    });
+    if (enLaNube) unawaited(datos!.integrantes.guardar(eventoId, persona));
   }
 
   void agregarGasto(String eventoId, Gasto gasto) {
     _reemplazar(eventoId, (evento) {
       return evento.copyWith(gastos: [gasto, ...evento.gastos]);
     });
+    if (enLaNube) unawaited(datos!.gastos.guardar(eventoId, gasto));
   }
 
   void actualizarGasto(String eventoId, Gasto gasto) {
@@ -134,12 +222,14 @@ class KavalState extends ChangeNotifier {
         ],
       );
     });
+    if (enLaNube) unawaited(datos!.gastos.guardar(eventoId, gasto));
   }
 
   void agregarAporte(String eventoId, AporteEfectivo aporte) {
     _reemplazar(eventoId, (evento) {
       return evento.copyWith(aportes: [...evento.aportes, aporte]);
     });
+    if (enLaNube) unawaited(datos!.aportes.guardar(eventoId, aporte));
   }
 
   void confirmarBorrador(String eventoId) {
@@ -188,11 +278,33 @@ class KavalState extends ChangeNotifier {
     return null;
   }
 
+  Future<Evento?> unirse(String codigo) async {
+    if (!enLaNube) return porCodigo(codigo);
+    final evento = await datos!.eventos.unirse(codigo, usuario);
+    if (evento == null) return null;
+    if (!eventos.any((actual) => actual.id == evento.id)) {
+      eventos = [evento, ...eventos];
+      notifyListeners();
+    }
+    return evento;
+  }
+
   void _reemplazar(String eventoId, Evento Function(Evento actual) cambio) {
     eventos = [
       for (final evento in eventos)
         if (evento.id == eventoId) cambio(evento) else evento,
     ];
     notifyListeners();
+  }
+
+  void _soltarNube() {
+    unawaited(_nube?.cancel());
+    _nube = null;
+  }
+
+  @override
+  void dispose() {
+    _soltarNube();
+    super.dispose();
   }
 }
