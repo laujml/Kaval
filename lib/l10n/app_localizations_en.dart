@@ -843,7 +843,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sesionReciente =>
-      'For safety, sign in again and then delete the account.';
+      'We couldn\'t confirm it\'s you. Sign in again and then delete the account.';
+
+  @override
+  String get googleInterrumpido =>
+      'Google sign-in was interrupted. Please try again.';
+
+  @override
+  String get googleNoDisponible =>
+      'Google isn\'t available on this phone right now.';
+
+  @override
+  String get googleMalConfigurado =>
+      'Google couldn\'t identify the app. Check that the debug SHA is in Firebase.';
+
+  @override
+  String get reautenticarTitulo => 'Confirm it\'s you';
+
+  @override
+  String get reautenticarCuerpo => 'Enter your password to delete the account.';
 
   @override
   String get cuentaDesactivada => 'This account is disabled.';

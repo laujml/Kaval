@@ -54,7 +54,7 @@ class DetalleEventoPage extends StatelessWidget {
                               Expanded(
                                 child: Text('${evento.nombre} ${evento.emoji}', style: KavalTexto.titulo(size: 22)),
                               ),
-                              _Nube(texto: textos.sincronizado),
+                              _Nube(alDia: evento.sincronizado, textos: textos),
                             ],
                           ),
                           const SizedBox(height: 4),
@@ -212,16 +212,23 @@ class _Encabezado extends StatelessWidget {
 }
 
 class _Nube extends StatelessWidget {
-  const _Nube({required this.texto});
+  const _Nube({required this.alDia, required this.textos});
 
-  final String texto;
+  final bool alDia;
+  final AppLocalizations textos;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: KavalColors.menta, borderRadius: BorderRadius.circular(12)),
-      child: Text('☁ $texto', style: KavalTexto.cuerpo(size: 11, weight: FontWeight.w800, color: KavalColors.verde)),
+    final etiqueta = alDia ? textos.sincronizado : textos.pendiente;
+    final color = alDia ? KavalColors.verde : KavalColors.marino;
+    final fondo = alDia ? KavalColors.menta : KavalColors.durazno;
+    return Semantics(
+      label: etiqueta,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(color: fondo, borderRadius: BorderRadius.circular(12)),
+        child: Text('☁ $etiqueta', style: KavalTexto.cuerpo(size: 11, weight: FontWeight.w800, color: color)),
+      ),
     );
   }
 }

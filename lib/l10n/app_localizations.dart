@@ -1607,8 +1607,38 @@ abstract class AppLocalizations {
   /// No description provided for @sesionReciente.
   ///
   /// In es, this message translates to:
-  /// **'Por seguridad, vuelve a entrar y luego elimina la cuenta.'**
+  /// **'No pudimos confirmar que eres tú. Vuelve a entrar y luego elimina la cuenta.'**
   String get sesionReciente;
+
+  /// No description provided for @googleInterrumpido.
+  ///
+  /// In es, this message translates to:
+  /// **'Se interrumpió el inicio con Google. Inténtalo otra vez.'**
+  String get googleInterrumpido;
+
+  /// No description provided for @googleNoDisponible.
+  ///
+  /// In es, this message translates to:
+  /// **'Google no está disponible en este teléfono ahora.'**
+  String get googleNoDisponible;
+
+  /// No description provided for @googleMalConfigurado.
+  ///
+  /// In es, this message translates to:
+  /// **'Google no pudo identificar la app. Revisa que el SHA de debug esté en Firebase.'**
+  String get googleMalConfigurado;
+
+  /// No description provided for @reautenticarTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirma que eres tú'**
+  String get reautenticarTitulo;
+
+  /// No description provided for @reautenticarCuerpo.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe tu contraseña para eliminar la cuenta.'**
+  String get reautenticarCuerpo;
 
   /// No description provided for @cuentaDesactivada.
   ///

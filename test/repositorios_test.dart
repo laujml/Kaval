@@ -5,8 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kaval/core/invitaciones/codigo_evento.dart';
 import 'package:kaval/data/datos_ejemplo.dart';
 import 'package:kaval/data/repositorios/repositorio_datos.dart';
+import 'package:kaval/models/gasto.dart';
 import 'package:kaval/models/integrante.dart';
 import 'package:kaval/models/usuario.dart';
+import 'package:kaval/state/kaval_state.dart';
 
 void main() {
   const cuenta = Usuario(
@@ -80,4 +82,52 @@ void main() {
     expect(lista.single.sincronizado, isTrue);
     expect(lista.single.nombre, 'Playa El Tunco');
   });
+
+  test('un gasto en la nube queda pendiente hasta que Firestore lo confirma', () async {
+    final db = FakeFirebaseFirestore();
+    final datos = RepositorioDatos(db);
+    await datos.cargarTunco(cuenta);
+    final estado = KavalState(datos: datos);
+    addTearDown(estado.dispose);
+    await estado.entrarEnLaNube(cuenta);
+    final id = 'tunco-${cuenta.id}';
+    await _cuando(() => estado.buscar(id)?.sincronizado == true);
+
+    estado.agregarGasto(id, _taxi());
+    expect(estado.buscar(id)!.sincronizado, isFalse);
+    expect(estado.buscar(id)!.gastos.first.montoCentavos, 3600);
+
+    await _cuando(() => estado.buscar(id)?.sincronizado == true);
+    final guardado = await db.collection('eventos').doc(id).collection('gastos').doc('taxi-avion').get();
+    expect(guardado.data()?['montoCentavos'], 3600);
+  });
+
+  test('en el perfil local un gasto no queda pendiente', () {
+    final estado = KavalState();
+    addTearDown(estado.dispose);
+    estado.entrar(nombre: 'Laura Angel', correo: 'laura.angel@email.com', local: true);
+    final id = estado.eventos.first.id;
+    estado.agregarGasto(id, _taxi());
+    expect(estado.buscar(id)!.sincronizado, isTrue);
+    expect(estado.buscar(id)!.gastos.first.concepto, 'Taxi avion');
+  });
+}
+
+Gasto _taxi() {
+  return Gasto(
+    id: 'taxi-avion',
+    concepto: 'Taxi avion',
+    montoCentavos: 3600,
+    participanteIds: const ['abcdefghijklmnopqrst'],
+    categoria: CategoriaGasto.transporte,
+    metodo: MetodoPago.tarjeta,
+    fecha: DateTime(2026, 10, 13),
+  );
+}
+
+Future<void> _cuando(bool Function() listo) async {
+  for (var i = 0; i < 50 && !listo(); i++) {
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+  }
+  expect(listo(), isTrue);
 }

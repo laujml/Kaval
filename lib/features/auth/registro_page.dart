@@ -479,6 +479,8 @@ class _RegistroPageState extends State<RegistroPage> {
     return Row(
       children: [
         Expanded(child: _social(textos.google, const _LogoGoogle(), _conGoogle)),
+        // Apple solo en iPhone. En Android y Windows el botón no se muestra.
+        // Se usa defaultTargetPlatform, no dart:io, para que la web siga analizando.
         if (auth.appleDisponible) ...[
           const SizedBox(width: 12),
           Expanded(

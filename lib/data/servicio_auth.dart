@@ -50,23 +50,65 @@ class ServicioAuth {
   }
 
   Future<Usuario?> entrarConGoogle() async {
+    final google = await _cuentaGoogle();
+    if (google == null) return null;
+    final idToken = google.authentication.idToken;
+    if (idToken == null) throw FirebaseAuthException(code: 'invalid-credential');
+    final credencial = GoogleAuthProvider.credential(idToken: idToken);
+    final resultado = await _sesion.signInWithCredential(credencial);
+    final cuenta = resultado.user;
+    if (cuenta == null) throw FirebaseAuthException(code: 'invalid-credential');
+    return _desde(cuenta, nombre: google.displayName);
+  }
+
+  /// La cuenta de correo pide la contraseña otra vez antes de borrarse.
+  bool get pideContrasenaParaBorrar => _tieneProveedor('password');
+
+  /// Confirma la sesión. Devuelve false si la persona cancela Google.
+  Future<bool> reautenticar({String? contrasena}) async {
+    final cuenta = _sesion.currentUser;
+    if (cuenta == null) throw FirebaseAuthException(code: 'requires-recent-login');
+    if (pideContrasenaParaBorrar) {
+      final correo = cuenta.email;
+      final clave = contrasena ?? '';
+      if (correo == null || correo.isEmpty || clave.isEmpty) {
+        throw FirebaseAuthException(code: 'wrong-password');
+      }
+      await cuenta.reauthenticateWithCredential(
+        EmailAuthProvider.credential(email: correo, password: clave),
+      );
+      return true;
+    }
+    if (_tieneProveedor('google.com')) {
+      final google = await _cuentaGoogle();
+      if (google == null) return false;
+      final idToken = google.authentication.idToken;
+      if (idToken == null) throw FirebaseAuthException(code: 'invalid-credential');
+      await cuenta.reauthenticateWithCredential(
+        GoogleAuthProvider.credential(idToken: idToken),
+      );
+      return true;
+    }
+    throw FirebaseAuthException(code: 'requires-recent-login');
+  }
+
+  Future<GoogleSignInAccount?> _cuentaGoogle() async {
     if (!_googleListo) {
       await GoogleSignIn.instance.initialize();
       _googleListo = true;
     }
     try {
-      final google = await GoogleSignIn.instance.authenticate();
-      final idToken = google.authentication.idToken;
-      if (idToken == null) throw FirebaseAuthException(code: 'invalid-credential');
-      final credencial = GoogleAuthProvider.credential(idToken: idToken);
-      final resultado = await _sesion.signInWithCredential(credencial);
-      final cuenta = resultado.user;
-      if (cuenta == null) throw FirebaseAuthException(code: 'invalid-credential');
-      return _desde(cuenta, nombre: google.displayName);
+      return await GoogleSignIn.instance.authenticate();
     } on GoogleSignInException catch (error) {
       if (error.code == GoogleSignInExceptionCode.canceled) return null;
       rethrow;
     }
+  }
+
+  bool _tieneProveedor(String id) {
+    final cuenta = auth?.currentUser;
+    if (cuenta == null) return false;
+    return cuenta.providerData.any((info) => info.providerId == id);
   }
 
   Future<Usuario> entrarConApple() async {

@@ -19,7 +19,7 @@ emulator -avd Pixel_7 -no-snapshot-load
 
 ## Entrar
 
-Con Firebase configurado: correo y contraseña, Google y, solo en iPhone, Apple. Desde el login se puede pedir el enlace para recuperar la contraseña. En Perfil se cierra la sesión y se elimina la cuenta.
+Con Firebase configurado: correo y contraseña, y Google. Apple solo aparece en iPhone (`defaultTargetPlatform`); en Android y Windows el botón no está. Desde el login se puede pedir el enlace para recuperar la contraseña. En Perfil, eliminar la cuenta pide la contraseña otra vez y luego borra el perfil y la cuenta.
 
 **Usar perfil local** sigue siendo el acceso de prueba. Entra como Laura, carga Playa El Tunco y Ruta de las Flores en el teléfono y no llama a Firestore. Sirve para ensayar la demo de errores sin una cuenta.
 

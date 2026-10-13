@@ -10,8 +10,15 @@ import 'firebase_no_configurado.dart';
 String mensajeAuth(Object error, AppLocalizations textos) {
   if (error is FirebaseNoConfigurado) return textos.firebaseSinConfigurar;
   if (error is GoogleSignInException) {
-    if (error.code == GoogleSignInExceptionCode.canceled) return '';
-    return textos.errorAuth;
+    return switch (error.code) {
+      GoogleSignInExceptionCode.canceled => '',
+      GoogleSignInExceptionCode.interrupted => textos.googleInterrumpido,
+      GoogleSignInExceptionCode.uiUnavailable => textos.googleNoDisponible,
+      GoogleSignInExceptionCode.clientConfigurationError ||
+      GoogleSignInExceptionCode.providerConfigurationError =>
+        textos.googleMalConfigurado,
+      _ => textos.errorAuth,
+    };
   }
   if (error is! FirebaseAuthException) return textos.errorAuth;
   return switch (error.code) {

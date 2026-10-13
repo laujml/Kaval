@@ -106,9 +106,10 @@ class RepositorioEventos {
   }
 
   Future<Evento> armar(DocumentSnapshot<Map<String, dynamic>> doc) async {
-    final integrantes = await _hijos(doc.reference.collection('integrantes'));
-    final gastos = await _hijos(doc.reference.collection('gastos'));
-    final aportes = await _hijos(doc.reference.collection('aportes'));
+    final soloLocal = doc.metadata.hasPendingWrites;
+    final integrantes = await _hijos(doc.reference.collection('integrantes'), soloLocal: soloLocal);
+    final gastos = await _hijos(doc.reference.collection('gastos'), soloLocal: soloLocal);
+    final aportes = await _hijos(doc.reference.collection('aportes'), soloLocal: soloLocal);
     gastos.sort((a, b) => a.orden.compareTo(b.orden));
     integrantes.sort((a, b) => a.orden.compareTo(b.orden));
     aportes.sort((a, b) => a.orden.compareTo(b.orden));
@@ -131,12 +132,33 @@ class _Hijo {
   final int orden;
 }
 
-Future<List<_Hijo>> _hijos(CollectionReference<Map<String, dynamic>> coleccion) async {
-  final snap = await coleccion.get();
+Future<List<_Hijo>> _hijos(
+  CollectionReference<Map<String, dynamic>> coleccion, {
+  bool soloLocal = false,
+}) async {
+  final snap = await _leerHijos(coleccion, soloLocal: soloLocal);
+  if (snap == null) return const [];
   return [
     for (final doc in snap.docs)
       _Hijo(doc.id, doc.data(), _ordenDe(doc.data())),
   ];
+}
+
+Future<QuerySnapshot<Map<String, dynamic>>?> _leerHijos(
+  CollectionReference<Map<String, dynamic>> coleccion, {
+  required bool soloLocal,
+}) async {
+  try {
+    if (soloLocal) return await coleccion.get(const GetOptions(source: Source.cache));
+    return await coleccion.get();
+  } catch (_) {
+    if (soloLocal) return null;
+  }
+  try {
+    return await coleccion.get(const GetOptions(source: Source.cache));
+  } catch (_) {
+    return null;
+  }
 }
 
 int _ordenDe(Map<String, dynamic> data) {

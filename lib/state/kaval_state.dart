@@ -180,18 +180,22 @@ class KavalState extends ChangeNotifier {
 
   void crearEvento(Evento evento) {
     var listo = evento;
-    if (enLaNube && listo.integrante(usuario.id) == null) {
+    if (enLaNube) {
+      final sinDueno = listo.integrante(usuario.id) == null;
       listo = listo.copyWith(
-        integrantes: [
-          Integrante(
-            id: usuario.id,
-            nombre: usuario.primerNombre,
-            colorFondo: 0xFFFFD9E0,
-            colorInicial: 0xFFE56B8A,
-            estado: EstadoUnion.admin,
-          ),
-          ...listo.integrantes,
-        ],
+        sincronizado: false,
+        integrantes: sinDueno
+            ? [
+                Integrante(
+                  id: usuario.id,
+                  nombre: usuario.primerNombre,
+                  colorFondo: 0xFFFFD9E0,
+                  colorInicial: 0xFFE56B8A,
+                  estado: EstadoUnion.admin,
+                ),
+                ...listo.integrantes,
+              ]
+            : listo.integrantes,
       );
     }
     eventos = [listo, ...eventos];
@@ -201,14 +205,20 @@ class KavalState extends ChangeNotifier {
 
   void agregarIntegrante(String eventoId, Integrante persona) {
     _reemplazar(eventoId, (evento) {
-      return evento.copyWith(integrantes: [...evento.integrantes, persona]);
+      return evento.copyWith(
+        integrantes: [...evento.integrantes, persona],
+        sincronizado: !enLaNube,
+      );
     });
     if (enLaNube) unawaited(datos!.integrantes.guardar(eventoId, persona));
   }
 
   void agregarGasto(String eventoId, Gasto gasto) {
     _reemplazar(eventoId, (evento) {
-      return evento.copyWith(gastos: [gasto, ...evento.gastos]);
+      return evento.copyWith(
+        gastos: [gasto, ...evento.gastos],
+        sincronizado: !enLaNube,
+      );
     });
     if (enLaNube) unawaited(datos!.gastos.guardar(eventoId, gasto));
   }
@@ -220,6 +230,7 @@ class KavalState extends ChangeNotifier {
           for (final actual in evento.gastos)
             if (actual.id == gasto.id) gasto else actual,
         ],
+        sincronizado: !enLaNube,
       );
     });
     if (enLaNube) unawaited(datos!.gastos.guardar(eventoId, gasto));
@@ -227,7 +238,10 @@ class KavalState extends ChangeNotifier {
 
   void agregarAporte(String eventoId, AporteEfectivo aporte) {
     _reemplazar(eventoId, (evento) {
-      return evento.copyWith(aportes: [...evento.aportes, aporte]);
+      return evento.copyWith(
+        aportes: [...evento.aportes, aporte],
+        sincronizado: !enLaNube,
+      );
     });
     if (enLaNube) unawaited(datos!.aportes.guardar(eventoId, aporte));
   }

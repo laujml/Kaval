@@ -845,7 +845,26 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get sesionReciente =>
-      'Por seguridad, vuelve a entrar y luego elimina la cuenta.';
+      'No pudimos confirmar que eres tú. Vuelve a entrar y luego elimina la cuenta.';
+
+  @override
+  String get googleInterrumpido =>
+      'Se interrumpió el inicio con Google. Inténtalo otra vez.';
+
+  @override
+  String get googleNoDisponible =>
+      'Google no está disponible en este teléfono ahora.';
+
+  @override
+  String get googleMalConfigurado =>
+      'Google no pudo identificar la app. Revisa que el SHA de debug esté en Firebase.';
+
+  @override
+  String get reautenticarTitulo => 'Confirma que eres tú';
+
+  @override
+  String get reautenticarCuerpo =>
+      'Escribe tu contraseña para eliminar la cuenta.';
 
   @override
   String get cuentaDesactivada => 'Esta cuenta está desactivada.';

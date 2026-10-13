@@ -9,6 +9,7 @@ import '../../core/theme/kaval_colors.dart';
 import '../../core/theme/kaval_texto.dart';
 import '../../core/widgets/aviso.dart';
 import '../../core/widgets/boton_coral.dart';
+import '../../core/widgets/campo_kaval.dart';
 import '../../core/widgets/kaval_avatar.dart';
 import '../../core/widgets/tarjeta_kaval.dart';
 import '../../data/datos_ejemplo.dart';
@@ -25,6 +26,7 @@ class PerfilPage extends StatelessWidget {
     final estado = context.watch<KavalState>();
     final laura = estado.buscar(idTunco)?.integrante(idLaura);
     final es = estado.idioma == 'es';
+    final alDia = estado.eventos.every((evento) => evento.sincronizado);
 
     return Scaffold(
       backgroundColor: KavalColors.crema,
@@ -54,7 +56,14 @@ class PerfilPage extends StatelessWidget {
                         Text(estado.usuario.nombre, style: KavalTexto.titulo(size: 18)),
                         Text(estado.usuario.correo, style: KavalTexto.cuerpo(size: 13)),
                         const SizedBox(height: 4),
-                        Text(textos.sincronizadoHace, style: KavalTexto.cuerpo(size: 12, weight: FontWeight.w800, color: KavalColors.verde)),
+                        Text(
+                          alDia ? textos.sincronizado : textos.pendiente,
+                          style: KavalTexto.cuerpo(
+                            size: 12,
+                            weight: FontWeight.w800,
+                            color: alDia ? KavalColors.verde : KavalColors.marino,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -256,18 +265,37 @@ Future<void> _eliminarCuenta(BuildContext context, AppLocalizations textos) asyn
       title: Text(textos.eliminarCuenta),
       content: Text(textos.eliminarPregunta),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(dialog, false), child: Text(textos.cancelar)),
-        TextButton(onPressed: () => Navigator.pop(dialog, true), child: Text(textos.eliminar)),
+        TextButton(
+          onPressed: () => Navigator.pop(dialog, false),
+          style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+          child: Text(textos.cancelar),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(dialog, true),
+          style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+          child: Text(textos.eliminar),
+        ),
       ],
     ),
   );
   if (borrar != true || !context.mounted) return;
   final estado = context.read<KavalState>();
+  final auth = context.read<ServicioAuth>();
   try {
     if (estado.enLaNube) {
+      String? clave;
+      if (auth.pideContrasenaParaBorrar) {
+        clave = await showDialog<String>(
+          context: context,
+          builder: (dialog) => const _DialogoReautenticar(),
+        );
+        if (clave == null || !context.mounted) return;
+      }
+      final confirmo = await auth.reautenticar(contrasena: clave);
+      if (!confirmo || !context.mounted) return;
       await estado.borrarCuentaEnLaNube();
       if (!context.mounted) return;
-      await context.read<ServicioAuth>().eliminarCuenta();
+      await auth.eliminarCuenta();
     }
     if (!context.mounted) return;
     await estado.salir();
@@ -276,5 +304,85 @@ Future<void> _eliminarCuenta(BuildContext context, AppLocalizations textos) asyn
   } catch (error) {
     if (!context.mounted) return;
     mostrarAviso(context, mensajeAuth(error, textos));
+  }
+}
+
+class _DialogoReautenticar extends StatefulWidget {
+  const _DialogoReautenticar();
+
+  @override
+  State<_DialogoReautenticar> createState() => _DialogoReautenticarState();
+}
+
+class _DialogoReautenticarState extends State<_DialogoReautenticar> {
+  final _formKey = GlobalKey<FormState>();
+  final _clave = TextEditingController();
+  final _foco = FocusNode();
+  var _ocultar = true;
+
+  @override
+  void dispose() {
+    _clave.dispose();
+    _foco.dispose();
+    super.dispose();
+  }
+
+  void _aceptar() {
+    if (_formKey.currentState?.validate() ?? false) {
+      Navigator.pop(context, _clave.text);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textos = AppLocalizations.of(context);
+    return AlertDialog(
+      backgroundColor: KavalColors.crema,
+      title: Text(textos.reautenticarTitulo, style: KavalTexto.titulo(size: 18)),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(textos.reautenticarCuerpo, style: KavalTexto.cuerpo()),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _clave,
+              focusNode: _foco,
+              autofocus: true,
+              obscureText: _ocultar,
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (_) => _aceptar(),
+              style: KavalTexto.cuerpo(color: KavalColors.marino),
+              decoration: decoracionCampo(
+                icono: Icons.lock_outline,
+                suffix: IconButton(
+                  onPressed: () => setState(() => _ocultar = !_ocultar),
+                  icon: Icon(_ocultar ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                  tooltip: _ocultar ? textos.mostrarContrasena : textos.ocultarContrasena,
+                ),
+              ),
+              validator: (valor) {
+                if (valor == null || valor.isEmpty) return textos.contrasenaObligatoria;
+                return null;
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+          child: Text(textos.cancelar),
+        ),
+        TextButton(
+          onPressed: _aceptar,
+          style: TextButton.styleFrom(minimumSize: const Size(48, 48)),
+          child: Text(textos.eliminar),
+        ),
+      ],
+    );
   }
 }
