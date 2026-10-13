@@ -1,0 +1,11 @@
+.idea/
+*.iml
+.env
+.env.*
+*.pem
+*.jks
+*.keystore
+key.properties
+**/google-services.json
+**/GoogleService-Info.plist
+local.properties
