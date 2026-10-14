@@ -136,8 +136,8 @@ class _RegistroPageState extends State<RegistroPage> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          backgroundColor: KavalColors.crema,
-          title: Text(textos.recuperarTitulo, style: KavalTexto.titulo(size: 18)),
+          scrollable: true,
+          title: Text(textos.recuperarTitulo),
           content: Form(
             key: formKey,
             child: TextFormField(
@@ -149,7 +149,7 @@ class _RegistroPageState extends State<RegistroPage> {
               onFieldSubmitted: (_) {
                 if (formKey.currentState!.validate()) Navigator.pop(dialogContext, true);
               },
-              decoration: decoracionCampo(hint: textos.correo),
+              decoration: decoracionCampo(dialogContext, hint: textos.correo),
               validator: (valor) {
                 final texto = valor?.trim() ?? '';
                 if (texto.isEmpty) return textos.correoObligatorio;
@@ -305,7 +305,7 @@ class _RegistroPageState extends State<RegistroPage> {
                 textInputAction: TextInputAction.next,
                 onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(_correoFocus),
                 style: KavalTexto.cuerpo(color: KavalColors.marino),
-                decoration: decoracionCampo(icono: Icons.person_outline),
+                decoration: decoracionCampo(context, icono: Icons.person_outline),
                 validator: (valor) {
                   final nombre = valor?.trim() ?? '';
                   if (nombre.isEmpty) return textos.nombreObligatorio;
@@ -325,7 +325,7 @@ class _RegistroPageState extends State<RegistroPage> {
               onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(_contrasenaFocus),
               autocorrect: false,
               style: KavalTexto.cuerpo(color: KavalColors.marino),
-              decoration: decoracionCampo(icono: Icons.mail_outline),
+              decoration: decoracionCampo(context, icono: Icons.mail_outline),
               validator: (valor) {
                 final correo = valor?.trim() ?? '';
                 if (correo.isEmpty) return textos.correoObligatorio;
@@ -350,6 +350,7 @@ class _RegistroPageState extends State<RegistroPage> {
               },
               style: KavalTexto.cuerpo(color: KavalColors.marino),
               decoration: decoracionCampo(
+                context,
                 icono: Icons.lock_outline,
                 suffix: _ojo(
                   oculto: _ocultarContrasena,
@@ -377,6 +378,7 @@ class _RegistroPageState extends State<RegistroPage> {
                 onFieldSubmitted: (_) => _enviar(),
                 style: KavalTexto.cuerpo(color: KavalColors.marino),
                 decoration: decoracionCampo(
+                  context,
                   icono: Icons.lock_outline,
                   suffix: _ojo(
                     oculto: _ocultarConfirmacion,

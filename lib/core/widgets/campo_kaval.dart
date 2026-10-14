@@ -2,45 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/kaval_colors.dart';
+import '../theme/kaval_medidas.dart';
+import '../theme/kaval_paleta.dart';
 import '../theme/kaval_texto.dart';
 
-/// Borde de los campos. El foco es coral, igual que en el registro de la semana 7.
-InputDecoration decoracionCampo({
+/// Borde de los campos. El foco es coral, igual que en el registro.
+InputDecoration decoracionCampo(
+  BuildContext context, {
   IconData? icono,
   Widget? suffix,
   String? hint,
   bool rellenoBlanco = true,
 }) {
-  const radio = BorderRadius.all(Radius.circular(16));
+  final paleta = KavalPaleta.de(context);
+  final radio = const BorderRadius.all(Radius.circular(KavalMedidas.radioCampo));
   return InputDecoration(
     hintText: hint,
     filled: true,
-    fillColor: rellenoBlanco ? Colors.white : KavalColors.campo,
-    prefixIcon: icono == null ? null : Icon(icono, color: KavalColors.gris),
+    fillColor: rellenoBlanco ? paleta.superficie : paleta.campo,
+    prefixIcon: icono == null ? null : Icon(icono, color: paleta.gris),
     suffixIcon: suffix,
     hintStyle: KavalTexto.cuerpo(),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-    border: const OutlineInputBorder(
+    contentPadding: const EdgeInsets.symmetric(horizontal: KavalMedidas.md, vertical: KavalMedidas.md),
+    border: OutlineInputBorder(borderRadius: radio, borderSide: BorderSide(color: paleta.borde)),
+    enabledBorder: OutlineInputBorder(borderRadius: radio, borderSide: BorderSide(color: paleta.borde)),
+    focusedBorder: OutlineInputBorder(
       borderRadius: radio,
-      borderSide: BorderSide(color: KavalColors.borde),
+      borderSide: BorderSide(color: paleta.coral, width: 1.6),
     ),
-    enabledBorder: const OutlineInputBorder(
+    errorBorder: OutlineInputBorder(borderRadius: radio, borderSide: BorderSide(color: paleta.rojo)),
+    focusedErrorBorder: OutlineInputBorder(
       borderRadius: radio,
-      borderSide: BorderSide(color: KavalColors.borde),
+      borderSide: BorderSide(color: paleta.rojo, width: 1.6),
     ),
-    focusedBorder: const OutlineInputBorder(
-      borderRadius: radio,
-      borderSide: BorderSide(color: KavalColors.coral, width: 1.6),
-    ),
-    errorBorder: const OutlineInputBorder(
-      borderRadius: radio,
-      borderSide: BorderSide(color: KavalColors.rojo),
-    ),
-    focusedErrorBorder: const OutlineInputBorder(
-      borderRadius: radio,
-      borderSide: BorderSide(color: KavalColors.rojo, width: 1.6),
-    ),
-    errorStyle: GoogleFonts.nunito(fontSize: 12, color: KavalColors.rojo),
+    errorStyle: GoogleFonts.nunito(fontSize: 12, color: paleta.rojo),
     errorMaxLines: 3,
   );
 }
@@ -53,7 +48,7 @@ class EtiquetaCampo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: KavalMedidas.xs),
       child: Text(
         texto,
         style: KavalTexto.cuerpo(

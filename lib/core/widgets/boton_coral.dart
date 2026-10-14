@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/kaval_colors.dart';
+import '../theme/kaval_medidas.dart';
 import '../theme/kaval_texto.dart';
 
 /// Botón principal de la app. El coral es la única acción fuerte.
@@ -27,17 +28,17 @@ class BotonCoral extends StatelessWidget {
         foregroundColor: Colors.white,
         disabledBackgroundColor: KavalColors.coral.withValues(alpha: 0.4),
         elevation: 0,
-        minimumSize: Size(expandido ? double.infinity : 0, 54),
-        padding: const EdgeInsets.symmetric(horizontal: 18),
+        minimumSize: Size(expandido ? double.infinity : 0, KavalMedidas.altoBoton),
+        padding: const EdgeInsets.symmetric(horizontal: KavalMedidas.md),
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(28)),
+          borderRadius: BorderRadius.all(Radius.circular(KavalMedidas.radioBoton)),
         ),
       ),
       child: Row(
         mainAxisSize: expandido ? MainAxisSize.max : MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (icono != null) ...[icono!, const SizedBox(width: 8)],
+          if (icono != null) ...[icono!, const SizedBox(width: KavalMedidas.xs)],
           Flexible(
             child: Text(
               texto,
@@ -55,7 +56,7 @@ class BotonCoral extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(KavalMedidas.radioBoton),
         boxShadow: [
           BoxShadow(
             color: KavalColors.coral.withValues(alpha: 0.28),
@@ -89,17 +90,17 @@ class BotonBlanco extends StatelessWidget {
         backgroundColor: Colors.white,
         foregroundColor: KavalColors.marino,
         side: const BorderSide(color: KavalColors.borde),
-        minimumSize: const Size(0, 52),
-        padding: const EdgeInsets.symmetric(horizontal: 14),
+        minimumSize: const Size(KavalMedidas.toque, KavalMedidas.altoBoton),
+        padding: const EdgeInsets.symmetric(horizontal: KavalMedidas.sm),
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(18)),
+          borderRadius: BorderRadius.all(Radius.circular(KavalMedidas.radioCampo)),
         ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icono != null) ...[icono!, const SizedBox(width: 8)],
+          if (icono != null) ...[icono!, const SizedBox(width: KavalMedidas.xs)],
           Flexible(
             child: Text(
               texto,

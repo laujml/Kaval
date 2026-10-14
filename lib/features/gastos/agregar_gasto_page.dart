@@ -294,7 +294,7 @@ class _AgregarGastoPageState extends State<AgregarGastoPage> {
                             textInputAction: TextInputAction.done,
                             onFieldSubmitted: (_) => _guardar(),
                             style: KavalTexto.cuerpo(color: KavalColors.marino, weight: FontWeight.w800),
-                            decoration: decoracionCampo(),
+                            decoration: decoracionCampo(context),
                             onChanged: (_) => setState(() => _errorConcepto = null),
                             validator: (valor) {
                               if (_errorConcepto != null) return _errorConcepto;

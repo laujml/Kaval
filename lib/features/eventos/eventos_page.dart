@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/theme/kaval_colors.dart';
-import '../../core/theme/kaval_texto.dart';
+import '../../core/theme/kaval_medidas.dart';
+import '../../core/theme/kaval_paleta.dart';
 import '../../core/widgets/aviso.dart';
 import '../../core/widgets/boton_coral.dart';
 import '../../core/widgets/campo_kaval.dart';
+import '../../core/widgets/estado_vacio.dart';
 import '../../l10n/app_localizations.dart';
 import '../../state/kaval_state.dart';
 import 'tarjeta_evento.dart';
@@ -18,37 +19,41 @@ class EventosPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final textos = AppLocalizations.of(context);
     final estado = context.watch<KavalState>();
+    final paleta = KavalPaleta.de(context);
+    final vacio = estado.eventos.isEmpty;
     return Scaffold(
-      backgroundColor: KavalColors.crema,
       body: SafeArea(
+        child: MarcoKaval(
         child: ListView.builder(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-          itemCount: estado.eventos.length + 1,
+          padding: KavalMedidas.pagina,
+          itemCount: vacio ? 1 : estado.eventos.length + 1,
           itemBuilder: (context, indice) {
             if (indice == 0) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(textos.eventos, style: KavalTexto.titulo(size: 28)),
-                  const SizedBox(height: 12),
+                  Text(textos.eventos, style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: paleta.marino)),
+                  const SizedBox(height: KavalMedidas.sm),
                   BotonCoral(
                     texto: textos.nuevoEvento,
                     icono: const Icon(Icons.add, color: Colors.white),
                     onPressed: () => context.push('/nuevo-evento'),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: KavalMedidas.sm),
                   BotonBlanco(texto: textos.unirme, onPressed: () => _unirme(context)),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: KavalMedidas.sm),
                   BotonBlanco(texto: textos.escanearCodigo, onPressed: () => context.push('/escanear')),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: KavalMedidas.sm),
                   BotonBlanco(texto: textos.cargarTunco, onPressed: () => _cargarTunco(context)),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: KavalMedidas.md),
+                  if (vacio)
+                    EstadoVacio(icono: Icons.beach_access_rounded, titulo: textos.sinEventos),
                 ],
               );
             }
             final evento = estado.eventos[indice - 1];
             return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.only(bottom: KavalMedidas.sm),
               child: TarjetaEvento(
                 evento: evento,
                 saldoCentavos: estado.saldoEn(evento),
@@ -57,6 +62,7 @@ class EventosPage extends StatelessWidget {
               ),
             );
           },
+        ),
         ),
       ),
     );
@@ -71,8 +77,8 @@ class EventosPage extends StatelessWidget {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          backgroundColor: KavalColors.crema,
-          title: Text(textos.unirme, style: KavalTexto.titulo(size: 18)),
+          scrollable: true,
+          title: Text(textos.unirme),
           content: Form(
             key: formKey,
             child: TextFormField(
@@ -86,7 +92,7 @@ class EventosPage extends StatelessWidget {
                   Navigator.of(dialogContext).pop(true);
                 }
               },
-              decoration: decoracionCampo(hint: textos.codigoHint),
+              decoration: decoracionCampo(dialogContext, hint: textos.codigoHint),
               validator: (valor) {
                 final texto = valor?.trim() ?? '';
                 if (texto.length < 4) return textos.codigoInvalido;
@@ -95,7 +101,10 @@ class EventosPage extends StatelessWidget {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(dialogContext), child: Text(textos.cancelar)),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(textos.cancelar),
+            ),
             TextButton(
               onPressed: () {
                 if (formKey.currentState!.validate()) Navigator.pop(dialogContext, true);

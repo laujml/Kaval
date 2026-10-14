@@ -176,7 +176,7 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                       textInputAction: TextInputAction.next,
                       onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(_integranteFocus),
                       style: KavalTexto.cuerpo(color: KavalColors.marino, weight: FontWeight.w800),
-                      decoration: decoracionCampo(),
+                      decoration: decoracionCampo(context),
                       validator: (valor) {
                         if ((valor?.trim() ?? '').isEmpty) return textos.nombreEventoObligatorio;
                         return null;
@@ -281,6 +281,7 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                             textInputAction: TextInputAction.done,
                             onFieldSubmitted: (_) => _agregar(textos),
                             decoration: decoracionCampo(
+                              context,
                               icono: Icons.person_outline,
                               hint: textos.agregarPorNombre,
                             ),

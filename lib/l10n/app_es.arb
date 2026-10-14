@@ -243,6 +243,7 @@
   "teUniste": "Listo, entraste al viaje",
   "sinEventos": "Todavía no hay eventos en esta categoría",
   "viajesRecientes": "Viajes recientes",
+  "historialVacio": "Cuando cierres un viaje, el resumen queda aquí.",
   "lugarFecha": "{lugar} · {fechas}",
   "@lugarFecha": {"placeholders": {"lugar": {"type": "String"}, "fechas": {"type": "String"}}},
   "categoriaComida": "Comida",

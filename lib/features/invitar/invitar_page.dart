@@ -239,7 +239,7 @@ class _AgregarPorNombreState extends State<_AgregarPorNombre> {
             textCapitalization: TextCapitalization.words,
             textInputAction: TextInputAction.done,
             onFieldSubmitted: (_) => _agregar(),
-            decoration: decoracionCampo(hint: textos.nombreInvitado),
+            decoration: decoracionCampo(context, hint: textos.nombreInvitado),
             validator: (valor) {
               final texto = valor?.trim() ?? '';
               if (texto.length < 2) return textos.nombreCorto;

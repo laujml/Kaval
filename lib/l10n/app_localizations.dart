@@ -1388,6 +1388,12 @@ abstract class AppLocalizations {
   /// **'Viajes recientes'**
   String get viajesRecientes;
 
+  /// No description provided for @historialVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando cierres un viaje, el resumen queda aquí.'**
+  String get historialVacio;
+
   /// No description provided for @lugarFecha.
   ///
   /// In es, this message translates to:

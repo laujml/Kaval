@@ -721,6 +721,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viajesRecientes => 'Recent trips';
 
   @override
+  String get historialVacio => 'When a trip ends, the summary stays here.';
+
+  @override
   String lugarFecha(String lugar, String fechas) {
     return '$lugar · $fechas';
   }

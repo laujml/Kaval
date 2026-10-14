@@ -6,10 +6,11 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/invitaciones/codigo_leido.dart';
-import '../../core/theme/kaval_colors.dart';
+import '../../core/theme/kaval_medidas.dart';
+import '../../core/theme/kaval_paleta.dart';
 import '../../core/theme/kaval_texto.dart';
 import '../../core/widgets/aviso.dart';
-import '../../core/widgets/logo_kaval.dart';
+import '../../core/widgets/estado_vacio.dart';
 import '../../l10n/app_localizations.dart';
 import '../../state/kaval_state.dart';
 
@@ -74,50 +75,62 @@ class _EscanearPageState extends State<EscanearPage> {
   @override
   Widget build(BuildContext context) {
     final textos = AppLocalizations.of(context);
+    final paleta = KavalPaleta.de(context);
     return Scaffold(
-      backgroundColor: KavalColors.marino,
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-              child: Row(
-                children: [
-                  BotonRedondo(icono: Icons.close, onTap: () => volver(context)),
-                  Expanded(
-                    child: Text(
-                      textos.escanearCodigo,
-                      textAlign: TextAlign.center,
-                      style: KavalTexto.titulo(size: 18, color: Colors.white),
+        child: MarcoKaval(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(KavalMedidas.sm, KavalMedidas.xs, KavalMedidas.sm, KavalMedidas.xs),
+                child: Row(
+                  children: [
+                    IconButton(
+                      tooltip: textos.cerrar,
+                      onPressed: () => volver(context),
+                      icon: Icon(Icons.close, color: paleta.marino),
                     ),
-                  ),
-                  const SizedBox(width: 42),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Semantics(
-                label: textos.apuntaQr,
-                child: MobileScanner(
-                  controller: _camara,
-                  onDetect: (captura) => unawaited(_alDetectar(captura)),
-                  errorBuilder: (context, error) {
-                    final permiso = error.errorCode == MobileScannerErrorCode.permissionDenied;
-                    return _AvisoCamara(texto: permiso ? textos.camaraPermiso : textos.errorGenerico);
-                  },
-                  overlayBuilder: (context, _) => const _Marco(),
+                    Expanded(
+                      child: Text(
+                        textos.escanearCodigo,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ),
+                    const SizedBox(width: KavalMedidas.toque),
+                  ],
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 20),
-              child: Text(
-                textos.apuntaQr,
-                textAlign: TextAlign.center,
-                style: KavalTexto.cuerpo(color: Colors.white),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: KavalMedidas.lg),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(KavalMedidas.radioTarjeta),
+                    child: Semantics(
+                      label: textos.apuntaQr,
+                      child: MobileScanner(
+                        controller: _camara,
+                        onDetect: (captura) => unawaited(_alDetectar(captura)),
+                        errorBuilder: (context, error) {
+                          final permiso = error.errorCode == MobileScannerErrorCode.permissionDenied;
+                          return _AvisoCamara(texto: permiso ? textos.camaraPermiso : textos.errorGenerico);
+                        },
+                        overlayBuilder: (context, _) => const _Marco(),
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.fromLTRB(KavalMedidas.xl, KavalMedidas.md, KavalMedidas.xl, KavalMedidas.lg),
+                child: Text(
+                  textos.apuntaQr,
+                  textAlign: TextAlign.center,
+                  style: KavalTexto.cuerpo(color: paleta.gris),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -131,14 +144,10 @@ class _AvisoCamara extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final paleta = KavalPaleta.de(context);
     return ColoredBox(
-      color: KavalColors.marino,
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(texto, textAlign: TextAlign.center, style: KavalTexto.cuerpo(color: Colors.white)),
-        ),
-      ),
+      color: paleta.crema,
+      child: EstadoVacio(icono: Icons.photo_camera_outlined, titulo: texto, fondo: paleta.durazno, tinta: paleta.coral),
     );
   }
 }
@@ -148,13 +157,14 @@ class _Marco extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final paleta = KavalPaleta.de(context);
     return Center(
       child: Container(
         width: 220,
         height: 220,
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.white, width: 3),
-          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: paleta.coral, width: 3),
+          borderRadius: BorderRadius.circular(KavalMedidas.radioTarjeta),
         ),
       ),
     );

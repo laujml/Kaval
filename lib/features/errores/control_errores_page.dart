@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/theme/kaval_colors.dart';
-import '../../core/theme/kaval_texto.dart';
+import '../../core/theme/kaval_medidas.dart';
+import '../../core/theme/kaval_paleta.dart';
 import '../../core/widgets/boton_coral.dart';
+import '../../core/widgets/estado_vacio.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Qué hacer al volver: reintentar la misma operación o guardarla en local.
@@ -34,58 +35,46 @@ class ControlErroresPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textos = AppLocalizations.of(context);
-    final copia = _copia(textos);
+    final paleta = KavalPaleta.de(context);
+    final copia = _copia(textos, paleta);
     return Scaffold(
-      backgroundColor: KavalColors.crema,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  tooltip: textos.cerrar,
-                  onPressed: () => volverDeError(context),
-                  icon: const Icon(Icons.close, color: KavalColors.marino),
-                ),
-              ),
-              const Spacer(),
-              Center(child: _Circulo(icono: copia.icono, fondo: copia.fondo, tinta: copia.tinta)),
-              const SizedBox(height: 28),
-              Text(copia.titulo, textAlign: TextAlign.center, style: KavalTexto.titulo(size: 28)),
-              const SizedBox(height: 12),
-              Text(
-                copia.cuerpo,
-                textAlign: TextAlign.center,
-                style: KavalTexto.cuerpo(size: 16),
-              ),
-              const Spacer(),
-              BotonCoral(texto: copia.principal, onPressed: () => _principal(context)),
-              if (copia.secundario != null) ...[
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: BotonBlanco(
-                    texto: copia.secundario!,
-                    onPressed: () => _secundario(context),
+        child: MarcoKaval(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(KavalMedidas.xl, KavalMedidas.sm, KavalMedidas.xl, KavalMedidas.xl),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    tooltip: textos.cerrar,
+                    onPressed: () => volverDeError(context),
+                    icon: Icon(Icons.close, color: paleta.marino),
                   ),
                 ),
+                const Spacer(),
+                EstadoVacio(icono: copia.icono, titulo: copia.titulo, cuerpo: copia.cuerpo, fondo: copia.fondo, tinta: copia.tinta),
+                const Spacer(),
+                BotonCoral(texto: copia.principal, onPressed: () => _principal(context)),
+                if (copia.secundario != null) ...[
+                  const SizedBox(height: KavalMedidas.sm),
+                  BotonBlanco(texto: copia.secundario!, onPressed: () => _secundario(context)),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  _Copia _copia(AppLocalizations textos) {
+  _Copia _copia(AppLocalizations textos, KavalPaleta paleta) {
     return switch (tipo) {
       TipoPantallaError.red => _Copia(
           icono: Icons.wifi_off_rounded,
-          fondo: KavalColors.durazno,
-          tinta: KavalColors.coral,
+          fondo: paleta.durazno,
+          tinta: paleta.coral,
           titulo: textos.errorSinRedTitulo,
           cuerpo: textos.errorSinRedCuerpo,
           principal: textos.reintentar,
@@ -93,16 +82,16 @@ class ControlErroresPage extends StatelessWidget {
         ),
       TipoPantallaError.espera => _Copia(
           icono: Icons.hourglass_top_rounded,
-          fondo: KavalColors.aviso,
-          tinta: KavalColors.oro,
+          fondo: paleta.aviso,
+          tinta: paleta.oro,
           titulo: textos.errorEsperaTitulo,
           cuerpo: textos.errorEsperaCuerpo,
           principal: textos.reintentar,
         ),
       TipoPantallaError.sesion => _Copia(
           icono: Icons.lock_outline_rounded,
-          fondo: const Color(0xFFFFE0E0),
-          tinta: KavalColors.rojo,
+          fondo: paleta.rosa,
+          tinta: paleta.rojo,
           titulo: textos.errorSesionTitulo,
           cuerpo: textos.errorSesionCuerpo,
           principal: textos.iniciarSesion,
@@ -155,22 +144,3 @@ class _Copia {
   final String? secundario;
 }
 
-class _Circulo extends StatelessWidget {
-  const _Circulo({required this.icono, required this.fondo, required this.tinta});
-
-  final IconData icono;
-  final Color fondo;
-  final Color tinta;
-
-  @override
-  Widget build(BuildContext context) {
-    return ExcludeSemantics(
-      child: Container(
-        width: 140,
-        height: 140,
-        decoration: BoxDecoration(color: fondo, shape: BoxShape.circle),
-        child: Icon(icono, size: 64, color: tinta),
-      ),
-    );
-  }
-}

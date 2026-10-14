@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-import '../theme/kaval_colors.dart';
+import '../theme/kaval_medidas.dart';
 
 /// Tarjeta blanca, muy redondeada y con sombra suave.
 class TarjetaKaval extends StatelessWidget {
   const TarjetaKaval({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(16),
+    this.padding = const EdgeInsets.all(KavalMedidas.md),
     this.color = Colors.white,
-    this.radio = 24,
+    this.radio = KavalMedidas.radioTarjeta,
     this.borde,
     this.onTap,
   });
@@ -29,13 +29,7 @@ class TarjetaKaval extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: radioBorde,
         border: borde,
-        boxShadow: const [
-          BoxShadow(
-            color: KavalColors.sombra,
-            blurRadius: 24,
-            offset: Offset(0, 10),
-          ),
-        ],
+        boxShadow: const [KavalMedidas.sombra],
       ),
       child: Material(
         color: color,

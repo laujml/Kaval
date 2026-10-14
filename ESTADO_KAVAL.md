@@ -45,8 +45,25 @@ Fecha: 13 de octubre de 2026. La app está en la raíz del repositorio. El proye
 
 ## 5. Calidad
 
-- `flutter analyze` (13 de octubre de 2026): **No issues found.**
+- `flutter analyze` (13 de octubre de 2026, después de la revisión visual): **No issues found.**
 - `flutter test`: **30 pasaron.** 7 de liquidación, 4 de red, 3 de mensajes de sesión, 8 de repositorios y 8 de voz, idioma y QR.
+
+## 7. Revisión visual
+
+El tema claro y el oscuro salen de `temaKaval`. El teléfono usa el modo del sistema. Colores, tipo, espacios, radios, botones, chips, tarjetas, campos, AppBar, diálogos y el estado vacío viven en `KavalPaleta`, `KavalMedidas` y los widgets `EstadoVacio` y `MarcoKaval`.
+
+Las 13 pantallas de Stitch (bienvenida, login, inicio, crear evento, detalle, nuevo gasto, dictar, confirmar, liquidar, Efectivo del grupo, resumen, invitar y perfil) se dejaron como el mockup. En oscuro siguen en crema, porque el mockup fija ese fondo y el texto marino.
+
+| Pantalla | Antes | Después |
+|---|---|---|
+| Control de errores | Fondo crema, círculo rosa suelto (`#FFE0E0`) y botones sin el mismo margen | Círculo pastel del tema, botón de cierre de 48, ancho máximo en tablet y los tres estados (red, espera, sesión) |
+| Historial | Lista armada a mano, sin vacío | `ListView.builder`, título del tema y estado vacío si no hay viajes |
+| Eventos | Botones y huecos sueltos; si no había viajes, la lista quedaba en blanco | Mismos botones con el espaciado del tema y un estado vacío |
+| Escanear | Pantalla entera marino, distinta al resto | Fondo del tema, cámara en tarjeta redondeada y marco coral |
+| Recuperar contraseña | `AlertDialog` genérico | Diálogo del tema, con scroll y acciones de 48 |
+| Unirme con código | Igual que el anterior | Igual que recuperar |
+| Privacidad, eliminar cuenta y volver a pedir la contraseña | Diálogos planos; eliminar no se leía como acción peligrosa | Mismo diálogo; eliminar va en rojo del tema |
+| Perfil (íconos) | Nube en azul suelto y borrar en rosa suelto | Menta y rosa de la paleta. La pantalla sigue el mockup 13 |
 - JDK de Flutter: Microsoft OpenJDK 21 en `C:\Users\OMEN\.jdks\microsoft-jdk-21\jdk-21.0.12.1+1`.
 
 ## 6. Siguientes pasos
@@ -56,3 +73,4 @@ Fecha: 13 de octubre de 2026. La app está en la raíz del repositorio. El proye
 3. Compartir el código y, en Liquidar, compartir el resumen.
 4. Negar el micrófono y la cámara una vez, para leer los avisos.
 5. Lo que seguía de la fase 2: cuenta de Google en el emulador, correo de recuperar, y Pendiente en modo avión.
+6. En el Pixel 7, mirar Historial, Eventos vacío, Escanear, Control de errores y los diálogos, en claro y en oscuro, a 360 px y en una ventana ancha.

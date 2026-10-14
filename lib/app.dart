@@ -16,6 +16,8 @@ class KavalApp extends StatelessWidget {
       title: 'Kaval',
       debugShowCheckedModeBanner: false,
       theme: temaKaval(),
+      darkTheme: temaKaval(brillo: Brightness.dark),
+      themeMode: ThemeMode.system,
       locale: estado.locale,
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,

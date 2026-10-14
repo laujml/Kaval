@@ -215,6 +215,7 @@
   "teUniste": "You're in the trip",
   "sinEventos": "No events in this category yet",
   "viajesRecientes": "Recent trips",
+  "historialVacio": "When a trip ends, the summary stays here.",
   "lugarFecha": "{lugar} · {fechas}",
   "categoriaComida": "Food",
   "categoriaTransporte": "Transport",
