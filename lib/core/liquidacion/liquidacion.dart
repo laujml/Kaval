@@ -14,6 +14,7 @@ class ResultadoLiquidacion {
     required this.gastadoEfectivo,
     required this.sobrante,
     required this.devolucion,
+    this.faltanteEfectivo = 0,
   });
 
   /// Positivo: a esa persona le deben. Negativo: esa persona debe.
@@ -30,9 +31,26 @@ class ResultadoLiquidacion {
   /// Efectivo que se le regresa a quien aportó, en proporción a su aporte.
   final Map<String, int> devolucion;
 
+  /// Lo gastado del fondo que nadie aportó. No entra en los saldos entre personas.
+  final int faltanteEfectivo;
+
   int saldoDe(String id) => saldos[id] ?? 0;
 
   int parteDe(String id) => parte[id] ?? 0;
+
+  ResultadoLiquidacion copyWith({List<Transferencia>? transferencias}) {
+    return ResultadoLiquidacion(
+      saldos: saldos,
+      parte: parte,
+      transferencias: transferencias ?? this.transferencias,
+      totalGastos: totalGastos,
+      reunido: reunido,
+      gastadoEfectivo: gastadoEfectivo,
+      sobrante: sobrante,
+      devolucion: devolucion,
+      faltanteEfectivo: faltanteEfectivo,
+    );
+  }
 }
 
 /// Reparte [monto] en partes enteras. Los centavos que sobran se dan de uno
@@ -91,54 +109,210 @@ Map<String, int> proporcional(int monto, Map<String, int> pesos) {
   return asignado;
 }
 
-ResultadoLiquidacion calcularLiquidacion(Evento evento) {
+/// Centavos de propina o servicio. El recorte es entero, así no depende del redondeo de double.
+int propinaDe(int subtotal, int porcentaje) {
+  if (subtotal <= 0 || porcentaje <= 0) return 0;
+  final tope = porcentaje > 100 ? 100 : porcentaje;
+  return (subtotal * tope) ~/ 100;
+}
+
+/// Parte de cada persona según el modo del gasto.
+///
+/// Iguales usa el orden de [Gasto.participanteIds]. Montos usa las cuotas
+/// guardadas. Consumo reparte cada ítem y luego propina y extras en proporción.
+Map<String, int> partesDeGasto(Gasto gasto) {
+  if (gasto.modoDivision == ModoDivision.consumo && gasto.items.isNotEmpty) {
+    final calculadas = partesConsumo(
+      items: gasto.items,
+      propinaPorcentaje: gasto.propinaPorcentaje,
+      extrasCentavos: gasto.extrasCentavos,
+    );
+    if (calculadas.isNotEmpty) return calculadas;
+  }
+  final cuotas = gasto.partes;
+  if (cuotas.isNotEmpty) {
+    final suma = sumaPartes(cuotas);
+    final usarCuotas = gasto.modoDivision != ModoDivision.iguales || suma == gasto.montoCentavos;
+    if (usarCuotas && suma > 0) return Map<String, int>.of(cuotas);
+  }
+  return repartirCentavos(gasto.montoCentavos, gasto.participanteIds);
+}
+
+/// Reparte ítems, propina y extras. El residuo de cada ítem sigue el orden
+/// de sus asignados; propina y extras usan el residuo proporcional.
+Map<String, int> partesConsumo({
+  required List<ItemGasto> items,
+  required int propinaPorcentaje,
+  required int extrasCentavos,
+}) {
+  final subtotales = <String, int>{};
+  for (final item in items) {
+    if (item.participanteIds.isEmpty || item.cantidad <= 0 || item.precioCentavos <= 0) {
+      continue;
+    }
+    final partes = repartirCentavos(item.totalCentavos, item.participanteIds);
+    for (final entrada in partes.entries) {
+      subtotales[entrada.key] = (subtotales[entrada.key] ?? 0) + entrada.value;
+    }
+  }
+  if (subtotales.isEmpty) return const {};
+  final subtotal = subtotales.values.fold(0, (suma, monto) => suma + monto);
+  final porPropina = proporcional(propinaDe(subtotal, propinaPorcentaje), subtotales);
+  final porExtras = proporcional(extrasCentavos < 0 ? 0 : extrasCentavos, subtotales);
+  return {
+    for (final id in subtotales.keys)
+      id: subtotales[id]! + (porPropina[id] ?? 0) + (porExtras[id] ?? 0),
+  };
+}
+
+int sumaPartes(Map<String, int> partes) {
+  return partes.values.fold(0, (suma, monto) => suma + monto);
+}
+
+bool saldosEnCero(Map<String, int> saldos) {
+  for (final monto in saldos.values) {
+    if (monto != 0) return false;
+  }
+  return true;
+}
+
+/// Saldos y partes en centavos, sin armar todavía las transferencias.
+///
+/// Un pago personal resta la cuota real y le suma el total a quien pagó.
+/// El efectivo del grupo solo genera deuda entre personas por la parte que
+/// el fondo sí cubre. Lo que falta en el fondo se anota aparte y no descuadra
+/// los saldos: tienen que sumar cero.
+ResultadoLiquidacion calcularSaldos(Evento evento) {
   final saldos = {for (final persona in evento.integrantes) persona.id: 0};
   final parte = {for (final persona in evento.integrantes) persona.id: 0};
+  final consumoFondo = <String, int>{};
   var totalGastos = 0;
   var gastadoEfectivo = 0;
 
   for (final gasto in evento.gastos) {
     totalGastos += gasto.montoCentavos;
-    final partes = repartirCentavos(gasto.montoCentavos, gasto.participanteIds);
+    var partes = _partesCanonicas(evento, partesDeGasto(gasto));
+    final suma = sumaPartes(partes);
+    if (gasto.montoCentavos > 0 && suma > 0 && suma != gasto.montoCentavos) {
+      partes = proporcional(gasto.montoCentavos, partes);
+    }
+    final cargado = sumaPartes(partes);
     for (final entrada in partes.entries) {
       saldos[entrada.key] = (saldos[entrada.key] ?? 0) - entrada.value;
       parte[entrada.key] = (parte[entrada.key] ?? 0) + entrada.value;
     }
-    if (gasto.metodo == MetodoPago.efectivoGrupo) {
-      gastadoEfectivo += gasto.montoCentavos;
-    } else if (gasto.pagadorId != null) {
-      // Quien pagó de su bolsillo recupera el monto completo.
-      saldos[gasto.pagadorId!] =
-          (saldos[gasto.pagadorId!] ?? 0) + gasto.montoCentavos;
+    final delFondo = gasto.metodo == MetodoPago.efectivoGrupo || gasto.pagadorId == null;
+    if (delFondo) {
+      final movido = cargado > 0 ? cargado : gasto.montoCentavos;
+      gastadoEfectivo += movido;
+      for (final entrada in partes.entries) {
+        consumoFondo[entrada.key] = (consumoFondo[entrada.key] ?? 0) + entrada.value;
+      }
+    } else {
+      final pagador = _idCanonico(evento, gasto.pagadorId!);
+      final credito = cargado > 0 ? cargado : gasto.montoCentavos;
+      saldos[pagador] = (saldos[pagador] ?? 0) + credito;
     }
   }
 
   final pesos = <String, int>{};
   for (final aporte in evento.aportes) {
-    pesos[aporte.integranteId] =
-        (pesos[aporte.integranteId] ?? 0) + aporte.montoCentavos;
+    final id = _idCanonico(evento, aporte.integranteId);
+    pesos[id] = (pesos[id] ?? 0) + aporte.montoCentavos;
   }
   final reunido = pesos.values.fold(0, (suma, monto) => suma + monto);
+  final cubierto = reunido < gastadoEfectivo ? reunido : gastadoEfectivo;
+  final faltante = gastadoEfectivo - cubierto;
 
-  // Lo gastado del fondo se acredita a quien aportó, en proporción.
-  final credito = proporcional(gastadoEfectivo, pesos);
+  final credito = proporcional(cubierto, pesos);
   for (final entrada in credito.entries) {
     saldos[entrada.key] = (saldos[entrada.key] ?? 0) + entrada.value;
   }
+  if (faltante > 0 && consumoFondo.isNotEmpty) {
+    final rebate = proporcional(faltante, consumoFondo);
+    for (final entrada in rebate.entries) {
+      saldos[entrada.key] = (saldos[entrada.key] ?? 0) + entrada.value;
+    }
+  }
+
+  final sumaSaldos = saldos.values.fold(0, (suma, monto) => suma + monto);
+  assert(sumaSaldos == 0, 'Los saldos deben sumar 0 y suman $sumaSaldos');
 
   final sobrante = reunido - gastadoEfectivo;
-  final devolucion = proporcional(sobrante < 0 ? 0 : sobrante, pesos);
-
   return ResultadoLiquidacion(
     saldos: saldos,
     parte: parte,
-    transferencias: deudaMinima(saldos),
+    transferencias: const [],
     totalGastos: totalGastos,
     reunido: reunido,
     gastadoEfectivo: gastadoEfectivo,
     sobrante: sobrante < 0 ? 0 : sobrante,
-    devolucion: devolucion,
+    devolucion: proporcional(sobrante < 0 ? 0 : sobrante, pesos),
+    faltanteEfectivo: faltante,
   );
+}
+
+/// Transferencias mínimas a partir de los saldos de [calcularSaldos].
+List<Transferencia> liquidar(Map<String, int> saldos) {
+  final exacta = deudaMinima(saldos);
+  if (exacta.isNotEmpty || saldosEnCero(saldos)) return exacta;
+  return _pagosPosibles(saldos);
+}
+
+ResultadoLiquidacion calcularLiquidacion(Evento evento) {
+  final cuentas = calcularSaldos(evento);
+  return cuentas.copyWith(transferencias: liquidar(cuentas.saldos));
+}
+
+String _idCanonico(Evento evento, String id) {
+  for (final persona in evento.integrantes) {
+    if (persona.id == id) return persona.id;
+  }
+  final busca = id.trim().toLowerCase();
+  final porNombre = [
+    for (final persona in evento.integrantes)
+      if (persona.nombre.trim().toLowerCase() == busca) persona.id,
+  ];
+  if (porNombre.length == 1) return porNombre.single;
+  final porPrimero = [
+    for (final persona in evento.integrantes)
+      if (persona.nombre.trim().toLowerCase().split(RegExp(r'\s+')).first == busca) persona.id,
+  ];
+  if (porPrimero.length == 1) return porPrimero.single;
+  return id;
+}
+
+Map<String, int> _partesCanonicas(Evento evento, Map<String, int> partes) {
+  final salida = <String, int>{};
+  for (final entrada in partes.entries) {
+    final id = _idCanonico(evento, entrada.key);
+    salida[id] = (salida[id] ?? 0) + entrada.value;
+  }
+  return salida;
+}
+
+List<Transferencia> _pagosPosibles(Map<String, int> saldos) {
+  final deudores = <String, int>{};
+  final acreedores = <String, int>{};
+  for (final entrada in saldos.entries) {
+    if (entrada.value < 0) deudores[entrada.key] = -entrada.value;
+    if (entrada.value > 0) acreedores[entrada.key] = entrada.value;
+  }
+  final pagos = <Transferencia>[];
+  final ordenDeudores = deudores.keys.toList()..sort();
+  final ordenAcreedores = acreedores.keys.toList()..sort();
+  for (final deudor in ordenDeudores) {
+    for (final acreedor in ordenAcreedores) {
+      final deuda = deudores[deudor] ?? 0;
+      final credito = acreedores[acreedor] ?? 0;
+      if (deuda == 0 || credito == 0) continue;
+      final pago = deuda < credito ? deuda : credito;
+      deudores[deudor] = deuda - pago;
+      acreedores[acreedor] = credito - pago;
+      pagos.add(Transferencia(deudorId: deudor, acreedorId: acreedor, montoCentavos: pago));
+    }
+  }
+  return _ordenarParaMostrar(pagos);
 }
 
 /// Arma la lista más corta de pagos que deja todos los saldos en cero.
@@ -146,8 +320,7 @@ ResultadoLiquidacion calcularLiquidacion(Evento evento) {
 /// Con grupos de viaje el número de personas es pequeño, así que se prueban
 /// las combinaciones. Si hay varias listas igual de cortas, se queda la que
 /// hace que el pago más chico lo haga el deudor que va primero en el alfabeto.
-/// Así el resultado no cambia entre corridas. En El Tunco eso elige a Ana
-/// para cubrir los $2.40 de Luis y deja los otros pagos enteros hacia Sofi.
+/// Así el resultado no cambia entre corridas.
 List<Transferencia> deudaMinima(Map<String, int> saldos) {
   final deudores = <String, int>{};
   final acreedores = <String, int>{};

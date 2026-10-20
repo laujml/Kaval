@@ -10,6 +10,7 @@ import '../../core/liquidacion/liquidacion.dart';
 import '../../core/theme/kaval_colors.dart';
 import '../../core/theme/kaval_texto.dart';
 import '../../core/utils/dinero.dart';
+import '../../core/utils/etiquetas.dart';
 import '../../core/utils/fechas.dart';
 import '../../core/widgets/aviso.dart';
 import '../../core/widgets/boton_coral.dart';
@@ -31,7 +32,8 @@ class ResumenPage extends StatelessWidget {
     final estado = context.watch<KavalState>();
     final evento = estado.buscar(eventoId);
     if (evento == null) return Scaffold(body: Center(child: Text(textos.sinEventos)));
-    final resultado = calcularLiquidacion(evento);
+    final cuentas = calcularSaldos(evento);
+    final resultado = cuentas.copyWith(transferencias: liquidar(cuentas.saldos));
     final resumen = textoResumen(textos, evento, resultado);
     final porCategoria = <CategoriaGasto, int>{};
     for (final gasto in evento.gastos) {
@@ -75,7 +77,7 @@ class ResumenPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(fechaConAnio(evento.inicio, estado.idioma), style: KavalTexto.cuerpo(size: 12)),
-                          Text('${evento.nombre} ${evento.emoji}', style: KavalTexto.titulo(size: 20)),
+                          Text(evento.nombre, style: KavalTexto.titulo(size: 20)),
                           const SizedBox(height: 8),
                           Row(
                             children: [
@@ -97,7 +99,19 @@ class ResumenPage extends StatelessWidget {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                                   decoration: BoxDecoration(color: KavalColors.crema, borderRadius: BorderRadius.circular(12)),
-                                  child: Text('${_emoji(entrada.key)} ${usd(entrada.value)}', style: KavalTexto.cuerpo(size: 12, color: KavalColors.marino, weight: FontWeight.w800)),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconoCategoria(
+                                        categoria: entrada.key,
+                                        tamano: 16,
+                                        color: KavalColors.coral,
+                                        etiqueta: nombreCategoria(textos, entrada.key),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(usd(entrada.value), style: KavalTexto.cuerpo(size: 12, color: KavalColors.marino, weight: FontWeight.w800)),
+                                    ],
+                                  ),
                                 ),
                             ],
                           ),
@@ -150,14 +164,5 @@ class ResumenPage extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _emoji(CategoriaGasto categoria) {
-    return switch (categoria) {
-      CategoriaGasto.comida => '🍽️',
-      CategoriaGasto.transporte => '⛽',
-      CategoriaGasto.hospedaje => '🏠',
-      CategoriaGasto.diversion => '🎟️',
-    };
   }
 }

@@ -187,8 +187,8 @@ class _RegistroPageState extends State<RegistroPage> {
   void _perfilLocal() {
     final textos = AppLocalizations.of(context);
     context.read<KavalState>().entrar(
-          nombre: 'Laura Angel',
-          correo: 'laura.angel@email.com',
+          nombre: _nombre.trim().isEmpty ? textos.nombreLocal : _nombre.trim(),
+          correo: _correo.trim(),
           local: true,
         );
     mostrarAviso(context, textos.perfilLocal);
@@ -210,7 +210,7 @@ class _RegistroPageState extends State<RegistroPage> {
               child: Stack(
                 alignment: Alignment.topCenter,
                 children: [
-                  const IlustracionCarretera(),
+                  IlustracionCarretera(semanticsLabel: textos.roadTrip),
                   Padding(
                     padding: const EdgeInsets.only(top: 156),
                     child: Column(

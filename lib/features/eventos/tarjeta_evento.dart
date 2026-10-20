@@ -30,6 +30,9 @@ class TarjetaEvento extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textos = AppLocalizations.of(context);
+    final lugar = evento.lugar.trim();
+    final fechas = rangoFechas(evento.inicio, evento.fin, idioma);
+    final meta = lugar.isEmpty ? fechas : textos.lugarFecha(lugar, fechas);
     final aFavor = saldoCentavos >= 0;
     final tarjeta = TarjetaKaval(
       onTap: onTap,
@@ -52,14 +55,14 @@ class TarjetaEvento extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            '${evento.nombre} ${evento.emoji}',
+            evento.nombre,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: KavalTexto.titulo(size: 16),
           ),
           const SizedBox(height: 2),
           Text(
-            textos.lugarFecha(evento.lugar, rangoFechas(evento.inicio, evento.fin, idioma)),
+            meta,
             style: KavalTexto.cuerpo(size: 12),
           ),
           const SizedBox(height: 12),

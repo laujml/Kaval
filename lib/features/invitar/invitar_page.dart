@@ -11,6 +11,7 @@ import '../../core/theme/kaval_colors.dart';
 import '../../core/theme/kaval_texto.dart';
 import '../../core/widgets/aviso.dart';
 import '../../core/widgets/boton_coral.dart';
+import '../../core/widgets/estado_vacio.dart';
 import '../../core/widgets/kaval_avatar.dart';
 import '../../core/widgets/logo_kaval.dart';
 import '../../core/widgets/campo_kaval.dart';
@@ -64,11 +65,12 @@ class InvitarPage extends StatelessWidget {
                     children: [
                       Text(evento.codigo, style: KavalTexto.titulo(size: 28)),
                       IconButton(
+                        tooltip: textos.copiar,
                         onPressed: () async {
                           await Clipboard.setData(ClipboardData(text: evento.codigo));
                           if (context.mounted) mostrarAviso(context, textos.copiado);
                         },
-                        icon: const Icon(Icons.copy_rounded, color: KavalColors.coral),
+                        icon: const Icon(Icons.copy, color: KavalColors.coral),
                       ),
                     ],
                   ),
@@ -114,6 +116,12 @@ class InvitarPage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
+            if (evento.integrantes.isEmpty)
+              EstadoVacio(
+                icono: Icons.group_outlined,
+                titulo: textos.sinIntegrantes,
+                cuerpo: textos.sinIntegrantesCuerpo,
+              ),
             for (final persona in evento.integrantes)
               ListTile(
                 contentPadding: EdgeInsets.zero,

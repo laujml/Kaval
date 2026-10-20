@@ -1,8 +1,9 @@
-import '../models/aporte_efectivo.dart';
-import '../models/evento.dart';
-import '../models/gasto.dart';
-import '../models/integrante.dart';
-import '../models/usuario.dart';
+import 'package:kaval/data/repositorios/repositorio_datos.dart';
+import 'package:kaval/models/aporte_efectivo.dart';
+import 'package:kaval/models/evento.dart';
+import 'package:kaval/models/gasto.dart';
+import 'package:kaval/models/integrante.dart';
+import 'package:kaval/models/usuario.dart';
 
 /// Ids en minúscula: el alfabeto de estos ids es el desempate de la liquidación.
 const idLaura = 'laura';
@@ -15,15 +16,7 @@ const idCarla = 'carla';
 const idTunco = 'tunco';
 const idFlores = 'flores';
 
-Usuario usuarioDemo() {
-  return const Usuario(
-    id: idLaura,
-    nombre: 'Laura Angel',
-    correo: 'laura.angel@email.com',
-  );
-}
-
-/// Playa El Tunco, con los montos del mockup.
+/// Viaje de prueba para la liquidación. No se carga en la app.
 Evento eventoPlayaTunco() {
   const integrantes = [
     Integrante(
@@ -81,7 +74,6 @@ Evento eventoPlayaTunco() {
     fin: DateTime(2026, 10, 4),
     portada: PortadaEvento.playa,
     codigo: 'TUNCO-7K2',
-    emoji: '🌊',
     custodioId: idAna,
     integrantes: integrantes,
     aportes: [
@@ -90,7 +82,6 @@ Evento eventoPlayaTunco() {
         integranteId: idAna,
         montoCentavos: 6000,
         descripcion: 'retiro',
-        emoji: '🏧',
         fecha: DateTime(2026, 10, 2, 9),
       ),
       AporteEfectivo(
@@ -98,11 +89,9 @@ Evento eventoPlayaTunco() {
         integranteId: idLuis,
         montoCentavos: 2000,
         descripcion: 'bolsa',
-        emoji: '💵',
         fecha: DateTime(2026, 10, 2, 9, 30),
       ),
     ],
-    // El orden es el del mockup: gasolina, pupusas, cocos, entradas, hospedaje.
     gastos: [
       Gasto(
         id: 'gasolina',
@@ -112,7 +101,6 @@ Evento eventoPlayaTunco() {
         participanteIds: todos,
         categoria: CategoriaGasto.transporte,
         metodo: MetodoPago.tarjeta,
-        emoji: '⛽',
         dictado: true,
         fecha: DateTime(2026, 10, 3, 18),
       ),
@@ -123,7 +111,6 @@ Evento eventoPlayaTunco() {
         participanteIds: sinCarla,
         categoria: CategoriaGasto.comida,
         metodo: MetodoPago.efectivoGrupo,
-        emoji: '🫓',
         fecha: DateTime(2026, 10, 3, 13, 20),
       ),
       Gasto(
@@ -133,7 +120,6 @@ Evento eventoPlayaTunco() {
         participanteIds: sinCarla,
         categoria: CategoriaGasto.comida,
         metodo: MetodoPago.efectivoGrupo,
-        emoji: '🥥',
         fecha: DateTime(2026, 10, 3, 15, 5),
       ),
       Gasto(
@@ -144,7 +130,6 @@ Evento eventoPlayaTunco() {
         participanteIds: todos,
         categoria: CategoriaGasto.diversion,
         metodo: MetodoPago.tarjeta,
-        emoji: '🎟️',
         fecha: DateTime(2026, 10, 3, 11),
       ),
       Gasto(
@@ -155,15 +140,12 @@ Evento eventoPlayaTunco() {
         participanteIds: todos,
         categoria: CategoriaGasto.hospedaje,
         metodo: MetodoPago.tarjeta,
-        emoji: '🏠',
         fecha: DateTime(2026, 10, 2, 16),
       ),
     ],
   );
 }
 
-/// Segundo viaje para que el inicio cuadre: te deben $15.25 y debes $10.60.
-/// Laura pagó $32.45 y Ana $53.55, entre 5. El neto de Laura es +$15.25.
 Evento eventoRutaFlores() {
   const integrantes = [
     Integrante(
@@ -208,7 +190,6 @@ Evento eventoRutaFlores() {
     fin: DateTime(2026, 9, 13),
     portada: PortadaEvento.carretera,
     codigo: 'FLORES-3M',
-    emoji: '🌸',
     custodioId: idAna,
     integrantes: integrantes,
     aportes: const [],
@@ -221,7 +202,6 @@ Evento eventoRutaFlores() {
         participanteIds: todos,
         categoria: CategoriaGasto.comida,
         metodo: MetodoPago.tarjeta,
-        emoji: '🍽️',
         fecha: DateTime(2026, 9, 12, 10),
       ),
       Gasto(
@@ -232,19 +212,13 @@ Evento eventoRutaFlores() {
         participanteIds: todos,
         categoria: CategoriaGasto.diversion,
         metodo: MetodoPago.tarjeta,
-        emoji: '🎟️',
         fecha: DateTime(2026, 9, 12, 15),
       ),
     ],
   );
 }
 
-List<Evento> eventosIniciales() => [eventoPlayaTunco(), eventoRutaFlores()];
-
-/// El mismo Tunco, pero la parte de Laura queda a nombre de la cuenta real.
-///
-/// El resto del grupo no tiene cuenta: solo conserva el nombre.
-/// La liquidación sigue usando los mismos centavos.
+/// El mismo viaje de prueba, con la parte de Laura a nombre de la cuenta.
 Evento tuncoParaCuenta(Usuario usuario) {
   if (usuario.local || usuario.id == idLaura) return eventoPlayaTunco();
   String idDe(String id) => id == idLaura ? usuario.id : id;
@@ -257,7 +231,6 @@ Evento tuncoParaCuenta(Usuario usuario) {
     fin: base.fin,
     portada: base.portada,
     codigo: base.codigo,
-    emoji: base.emoji,
     custodioId: idDe(base.custodioId),
     integrantes: [
       for (final persona in base.integrantes)
@@ -276,7 +249,6 @@ Evento tuncoParaCuenta(Usuario usuario) {
           integranteId: idDe(aporte.integranteId),
           montoCentavos: aporte.montoCentavos,
           descripcion: aporte.descripcion,
-          emoji: aporte.emoji,
           fecha: aporte.fecha,
         ),
     ],
@@ -290,7 +262,6 @@ Evento tuncoParaCuenta(Usuario usuario) {
           participanteIds: [for (final id in gasto.participanteIds) idDe(id)],
           categoria: gasto.categoria,
           metodo: gasto.metodo,
-          emoji: gasto.emoji,
           dictado: gasto.dictado,
           fecha: gasto.fecha,
         ),
@@ -298,18 +269,13 @@ Evento tuncoParaCuenta(Usuario usuario) {
   );
 }
 
-/// Borrador que muestra la confirmación del dictado de gasolina.
-Gasto borradorGasolina() {
-  return Gasto(
-    id: 'borrador-gasolina',
-    concepto: 'Gasolina',
-    montoCentavos: 2400,
-    pagadorId: idLaura,
-    participanteIds: [idLaura, idAna, idLuis, idSofi, idDiego, idCarla],
-    categoria: CategoriaGasto.transporte,
-    metodo: MetodoPago.tarjeta,
-    emoji: '⛽',
-    dictado: true,
-    fecha: DateTime(2026, 10, 3, 18),
-  );
+Future<void> guardarTunco(RepositorioDatos datos, Usuario usuario) async {
+  final evento = tuncoParaCuenta(usuario);
+  final guardado = await datos.eventos.guardar(evento, duenoId: usuario.id);
+  for (var i = 0; i < guardado.gastos.length; i++) {
+    await datos.gastos.guardar(guardado.id, guardado.gastos[i], orden: i);
+  }
+  for (var i = 0; i < guardado.aportes.length; i++) {
+    await datos.aportes.guardar(guardado.id, guardado.aportes[i], orden: i);
+  }
 }

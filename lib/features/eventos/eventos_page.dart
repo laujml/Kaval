@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/theme/kaval_colors.dart';
 import '../../core/theme/kaval_medidas.dart';
 import '../../core/theme/kaval_paleta.dart';
 import '../../core/widgets/aviso.dart';
@@ -20,13 +21,14 @@ class EventosPage extends StatelessWidget {
     final textos = AppLocalizations.of(context);
     final estado = context.watch<KavalState>();
     final paleta = KavalPaleta.de(context);
-    final vacio = estado.eventos.isEmpty;
+    final activos = estado.eventosActivos;
+    final vacio = activos.isEmpty;
     return Scaffold(
       body: SafeArea(
         child: MarcoKaval(
         child: ListView.builder(
           padding: KavalMedidas.pagina,
-          itemCount: vacio ? 1 : estado.eventos.length + 1,
+          itemCount: vacio ? 1 : activos.length + 1,
           itemBuilder: (context, indice) {
             if (indice == 0) {
               return Column(
@@ -42,16 +44,27 @@ class EventosPage extends StatelessWidget {
                   const SizedBox(height: KavalMedidas.sm),
                   BotonBlanco(texto: textos.unirme, onPressed: () => _unirme(context)),
                   const SizedBox(height: KavalMedidas.sm),
-                  BotonBlanco(texto: textos.escanearCodigo, onPressed: () => context.push('/escanear')),
-                  const SizedBox(height: KavalMedidas.sm),
-                  BotonBlanco(texto: textos.cargarTunco, onPressed: () => _cargarTunco(context)),
+                  BotonBlanco(
+                    texto: textos.escanearCodigo,
+                    icono: const Icon(Icons.qr_code_scanner, color: KavalColors.marino),
+                    onPressed: () => context.push('/escanear'),
+                  ),
                   const SizedBox(height: KavalMedidas.md),
                   if (vacio)
-                    EstadoVacio(icono: Icons.beach_access_rounded, titulo: textos.sinEventos),
+                    EstadoVacio(
+                      icono: Icons.luggage_outlined,
+                      titulo: estado.eventos.isEmpty ? textos.sinEventos : textos.sinEventosActivos,
+                      cuerpo: estado.eventos.isEmpty ? textos.sinEventosCuerpo : textos.sinEventosActivosCuerpo,
+                      accion: BotonCoral(
+                        texto: estado.eventos.isEmpty ? textos.nuevoEvento : textos.verHistorial,
+                        icono: Icon(estado.eventos.isEmpty ? Icons.add : Icons.history, color: Colors.white),
+                        onPressed: () => estado.eventos.isEmpty ? context.push('/nuevo-evento') : context.go('/historial'),
+                      ),
+                    ),
                 ],
               );
             }
-            final evento = estado.eventos[indice - 1];
+            final evento = activos[indice - 1];
             return Padding(
               padding: const EdgeInsets.only(bottom: KavalMedidas.sm),
               child: TarjetaEvento(
@@ -127,18 +140,5 @@ class EventosPage extends StatelessWidget {
     }
     mostrarAviso(context, textos.teUniste);
     context.push('/evento/${evento.id}');
-  }
-
-  Future<void> _cargarTunco(BuildContext context) async {
-    final textos = AppLocalizations.of(context);
-    try {
-      await context.read<KavalState>().cargarEjemploTunco();
-      if (!context.mounted) return;
-      mostrarAviso(context, textos.tuncoCargado);
-    } catch (error) {
-      debugPrint('[kaval] no se pudo cargar Tunco: $error');
-      if (!context.mounted) return;
-      mostrarAviso(context, textos.errorGenerico);
-    }
   }
 }

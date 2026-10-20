@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kaval/core/liquidacion/liquidacion.dart';
-import 'package:kaval/data/datos_ejemplo.dart';
+import 'fixtures/datos_ejemplo.dart';
 import 'package:kaval/models/aporte_efectivo.dart';
 import 'package:kaval/models/evento.dart';
 import 'package:kaval/models/gasto.dart';

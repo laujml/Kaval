@@ -10,6 +10,7 @@ import '../../core/utils/etiquetas.dart';
 import '../../core/utils/fechas.dart';
 import '../../core/widgets/aviso.dart';
 import '../../core/widgets/boton_coral.dart';
+import '../../core/widgets/estado_vacio.dart';
 import '../../core/widgets/ilustraciones.dart';
 import '../../core/widgets/kaval_avatar.dart';
 import '../../core/widgets/logo_kaval.dart';
@@ -32,7 +33,8 @@ class DetalleEventoPage extends StatelessWidget {
     if (evento == null) {
       return Scaffold(body: Center(child: Text(textos.sinEventos)));
     }
-    final resultado = calcularLiquidacion(evento);
+    final cuentas = calcularSaldos(evento);
+    final resultado = cuentas.copyWith(transferencias: liquidar(cuentas.saldos));
     final saldo = resultado.saldoDe(estado.usuario.id);
     return Scaffold(
       backgroundColor: KavalColors.crema,
@@ -52,7 +54,7 @@ class DetalleEventoPage extends StatelessWidget {
                           Row(
                             children: [
                               Expanded(
-                                child: Text('${evento.nombre} ${evento.emoji}', style: KavalTexto.titulo(size: 22)),
+                                child: Text(evento.nombre, style: KavalTexto.titulo(size: 22)),
                               ),
                               _Nube(alDia: evento.sincronizado, textos: textos),
                             ],
@@ -98,14 +100,25 @@ class DetalleEventoPage extends StatelessWidget {
                   ),
                 ),
                 SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: 118,
-                    child: ListView.separated(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      scrollDirection: Axis.horizontal,
-                      itemCount: evento.integrantes.length,
-                      separatorBuilder: (_, _) => const SizedBox(width: 8),
-                      itemBuilder: (context, indice) {
+                  child: evento.integrantes.isEmpty
+                      ? EstadoVacio(
+                          icono: Icons.group_outlined,
+                          titulo: textos.sinIntegrantes,
+                          cuerpo: textos.sinIntegrantesCuerpo,
+                          accion: BotonCoral(
+                            texto: textos.invitar,
+                            icono: const Icon(Icons.group_outlined, color: Colors.white, size: 18),
+                            onPressed: () => context.push('/evento/$eventoId/invitar'),
+                          ),
+                        )
+                      : SizedBox(
+                          height: 118,
+                          child: ListView.separated(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            scrollDirection: Axis.horizontal,
+                            itemCount: evento.integrantes.length,
+                            separatorBuilder: (_, _) => const SizedBox(width: 8),
+                            itemBuilder: (context, indice) {
                         final persona = evento.integrantes[indice];
                         final valor = resultado.saldoDe(persona.id);
                         final eresTu = persona.id == estado.usuario.id;
@@ -151,7 +164,21 @@ class DetalleEventoPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                SliverPadding(
+                if (evento.gastos.isEmpty)
+                  SliverToBoxAdapter(
+                    child: EstadoVacio(
+                      icono: Icons.receipt_long_outlined,
+                      titulo: textos.sinGastos,
+                      cuerpo: textos.sinGastosCuerpo,
+                      accion: BotonCoral(
+                        texto: textos.nuevoGasto,
+                        icono: const Icon(Icons.add, color: Colors.white),
+                        onPressed: () => context.push('/evento/$eventoId/gasto'),
+                      ),
+                    ),
+                  )
+                else
+                  SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   sliver: SliverList.separated(
                     itemCount: evento.gastos.length,
@@ -178,6 +205,7 @@ class _Encabezado extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textos = AppLocalizations.of(context);
     return SizedBox(
       height: 210,
       child: Stack(
@@ -194,7 +222,8 @@ class _Encabezado extends StatelessWidget {
                 BotonRedondo(icono: Icons.chevron_left, onTap: () => volver(context)),
                 const Spacer(),
                 BotonRedondo(
-                  icono: Icons.ios_share_rounded,
+                  icono: Icons.share,
+                  etiqueta: textos.compartir,
                   onTap: () => context.push('/evento/${evento.id}/resumen'),
                 ),
                 const SizedBox(width: 8),
@@ -227,7 +256,18 @@ class _Nube extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(color: fondo, borderRadius: BorderRadius.circular(12)),
-        child: Text('☁ $etiqueta', style: KavalTexto.cuerpo(size: 11, weight: FontWeight.w800, color: color)),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              alDia ? Icons.cloud_done_rounded : Icons.cloud_upload_rounded,
+              size: 14,
+              color: color,
+            ),
+            const SizedBox(width: 4),
+            Text(etiqueta, style: KavalTexto.cuerpo(size: 11, weight: FontWeight.w800, color: color)),
+          ],
+        ),
       ),
     );
   }
@@ -279,7 +319,11 @@ class _FilaGasto extends StatelessWidget {
             height: 42,
             alignment: Alignment.center,
             decoration: BoxDecoration(color: KavalColors.durazno, borderRadius: BorderRadius.circular(12)),
-            child: Text(gasto.emoji, style: const TextStyle(fontSize: 20)),
+            child: IconoCategoria(
+              categoria: gasto.categoria,
+              etiqueta: nombreCategoria(textos, gasto.categoria),
+              color: KavalColors.coral,
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -293,11 +337,11 @@ class _FilaGasto extends StatelessWidget {
                     ),
                     if (gasto.dictado) ...[
                       const SizedBox(width: 6),
-                      _Etiqueta(texto: '🎙️ ${textos.dictado}', color: KavalColors.coral),
+                      _Etiqueta(icono: Icons.mic_none, texto: textos.dictado, color: KavalColors.coral),
                     ],
                     if (gasto.esEfectivoGrupo) ...[
                       const SizedBox(width: 6),
-                      _Etiqueta(texto: '💵 ${textos.efectivo}', color: KavalColors.verde),
+                      _Etiqueta(icono: Icons.payments_outlined, texto: textos.efectivo, color: KavalColors.verde),
                     ],
                   ],
                 ),
@@ -313,8 +357,9 @@ class _FilaGasto extends StatelessWidget {
 }
 
 class _Etiqueta extends StatelessWidget {
-  const _Etiqueta({required this.texto, required this.color});
+  const _Etiqueta({required this.icono, required this.texto, required this.color});
 
+  final IconData icono;
   final String texto;
   final Color color;
 
@@ -326,7 +371,14 @@ class _Etiqueta extends StatelessWidget {
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(texto, style: KavalTexto.cuerpo(size: 10, weight: FontWeight.w800, color: color)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icono, size: 12, color: color),
+          const SizedBox(width: 2),
+          Text(texto, style: KavalTexto.cuerpo(size: 10, weight: FontWeight.w800, color: color)),
+        ],
+      ),
     );
   }
 }

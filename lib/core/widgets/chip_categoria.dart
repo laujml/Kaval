@@ -8,14 +8,14 @@ class ChipCategoria extends StatelessWidget {
   const ChipCategoria({
     super.key,
     required this.texto,
-    this.emoji,
+    this.icono,
     this.activo = false,
     this.oscuro = false,
     this.onTap,
   });
 
   final String texto;
-  final String? emoji;
+  final IconData? icono;
   final bool activo;
   final bool oscuro;
   final VoidCallback? onTap;
@@ -45,8 +45,8 @@ class ChipCategoria extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (emoji != null) ...[
-                Text(emoji!, style: const TextStyle(fontSize: 14)),
+              if (icono != null) ...[
+                ExcludeSemantics(child: Icon(icono, size: 16, color: tinta)),
                 const SizedBox(width: 6),
               ],
               Text(

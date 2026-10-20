@@ -5,11 +5,13 @@ import 'package:provider/provider.dart';
 import '../../core/theme/kaval_colors.dart';
 import '../../core/theme/kaval_texto.dart';
 import '../../core/utils/dinero.dart';
+import '../../core/utils/etiquetas.dart';
 import '../../core/widgets/aviso.dart';
+import '../../core/widgets/boton_coral.dart';
 import '../../core/widgets/chip_categoria.dart';
+import '../../core/widgets/estado_vacio.dart';
 import '../../core/widgets/ilustraciones.dart';
 import '../../core/widgets/kaval_avatar.dart';
-import '../../data/datos_ejemplo.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/evento.dart';
 import '../../state/kaval_state.dart';
@@ -23,7 +25,7 @@ class InicioPage extends StatelessWidget {
     final textos = AppLocalizations.of(context);
     final estado = context.watch<KavalState>();
     final eventos = estado.eventosFiltrados;
-    final laura = estado.buscar(idTunco)?.integrante(idLaura);
+    final inicial = _inicial(estado.usuario.primerNombre);
 
     return Scaffold(
       backgroundColor: KavalColors.crema,
@@ -33,7 +35,12 @@ class InicioPage extends StatelessWidget {
           children: [
             Row(
               children: [
-                if (laura != null) avatarDe(laura, tamano: 52),
+                KavalAvatar(
+                  inicial: inicial,
+                  fondo: const Color(0xFFFFD9E0),
+                  tinta: const Color(0xFFE56B8A),
+                  tamano: 52,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -73,28 +80,28 @@ class InicioPage extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   ChipCategoria(
-                    emoji: '🏖️',
+                    icono: iconoPortada(PortadaEvento.playa),
                     texto: textos.playa,
                     activo: estado.filtro == PortadaEvento.playa,
                     onTap: () => estado.cambiarFiltro(PortadaEvento.playa),
                   ),
                   const SizedBox(width: 8),
                   ChipCategoria(
-                    emoji: '🌋',
+                    icono: iconoPortada(PortadaEvento.volcan),
                     texto: textos.volcan,
                     activo: estado.filtro == PortadaEvento.volcan,
                     onTap: () => estado.cambiarFiltro(PortadaEvento.volcan),
                   ),
                   const SizedBox(width: 8),
                   ChipCategoria(
-                    emoji: '🍽️',
+                    icono: iconoPortada(PortadaEvento.comida),
                     texto: textos.comidas,
                     activo: estado.filtro == PortadaEvento.comida,
                     onTap: () => estado.cambiarFiltro(PortadaEvento.comida),
                   ),
                   const SizedBox(width: 8),
                   ChipCategoria(
-                    emoji: '🚗',
+                    icono: iconoPortada(PortadaEvento.carretera),
                     texto: textos.roadTrip,
                     activo: estado.filtro == PortadaEvento.carretera,
                     onTap: () => estado.cambiarFiltro(PortadaEvento.carretera),
@@ -113,48 +120,27 @@ class InicioPage extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(
-              height: 300,
-              child: eventos.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(textos.sinEventos, textAlign: TextAlign.center, style: KavalTexto.cuerpo()),
-                          TextButton(
-                            onPressed: () async {
-                              try {
-                                await context.read<KavalState>().cargarEjemploTunco();
-                                if (context.mounted) mostrarAviso(context, textos.tuncoCargado);
-                              } catch (error) {
-                                debugPrint('[kaval] no se pudo cargar Tunco: $error');
-                                if (context.mounted) mostrarAviso(context, textos.errorGenerico);
-                              }
-                            },
-                            child: Text(
-                              textos.cargarTunco,
-                              style: KavalTexto.cuerpo(weight: FontWeight.w800, color: KavalColors.coral),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: eventos.length,
-                      separatorBuilder: (_, _) => const SizedBox(width: 12),
-                      itemBuilder: (context, indice) {
-                        final evento = eventos[indice];
-                        return TarjetaEvento(
-                          evento: evento,
-                          saldoCentavos: estado.saldoEn(evento),
-                          idioma: estado.idioma,
-                          ancho: 280,
-                          onTap: () => context.push('/evento/${evento.id}'),
-                        );
-                      },
-                    ),
-            ),
+            if (eventos.isEmpty)
+              _VacioActivos(hayEventos: estado.eventos.isNotEmpty, hayActivos: estado.eventosActivos.isNotEmpty)
+            else
+              SizedBox(
+                height: 300,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: eventos.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  itemBuilder: (context, indice) {
+                    final evento = eventos[indice];
+                    return TarjetaEvento(
+                      evento: evento,
+                      saldoCentavos: estado.saldoEn(evento),
+                      idioma: estado.idioma,
+                      ancho: 280,
+                      onTap: () => context.push('/evento/${evento.id}'),
+                    );
+                  },
+                ),
+              ),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -164,7 +150,7 @@ class InicioPage extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.mic_none_rounded, color: KavalColors.verde),
+                  const ExcludeSemantics(child: Icon(Icons.lightbulb_outline, color: KavalColors.verde)),
                   const SizedBox(width: 8),
                   Expanded(child: Text(textos.tipVoz, style: KavalTexto.cuerpo(color: KavalColors.marino))),
                 ],
@@ -175,6 +161,52 @@ class InicioPage extends StatelessWidget {
       ),
     );
   }
+}
+
+class _VacioActivos extends StatelessWidget {
+  const _VacioActivos({required this.hayEventos, required this.hayActivos});
+
+  final bool hayEventos;
+  final bool hayActivos;
+
+  @override
+  Widget build(BuildContext context) {
+    final textos = AppLocalizations.of(context);
+    if (!hayEventos) {
+      return EstadoVacio(
+        icono: Icons.luggage_outlined,
+        titulo: textos.sinEventos,
+        cuerpo: textos.sinEventosCuerpo,
+        accion: BotonCoral(
+          texto: textos.nuevoEvento,
+          icono: const Icon(Icons.add, color: Colors.white),
+          onPressed: () => context.push('/nuevo-evento'),
+        ),
+      );
+    }
+    if (!hayActivos) {
+      return EstadoVacio(
+        icono: Icons.event_available_outlined,
+        titulo: textos.sinEventosActivos,
+        cuerpo: textos.sinEventosActivosCuerpo,
+        accion: BotonCoral(
+          texto: textos.verHistorial,
+          icono: const Icon(Icons.history, color: Colors.white),
+          onPressed: () => context.go('/historial'),
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      child: Text(textos.sinEventosFiltro, textAlign: TextAlign.center, style: KavalTexto.cuerpo()),
+    );
+  }
+}
+
+String _inicial(String nombre) {
+  final limpio = nombre.trim();
+  if (limpio.isEmpty) return '?';
+  return limpio[0].toUpperCase();
 }
 
 class _Balance extends StatelessWidget {
@@ -222,7 +254,7 @@ class _Balance extends StatelessWidget {
               ],
             ),
           ),
-          const IlustracionMonedas(),
+          const IlustracionCuentas(),
         ],
       ),
     );

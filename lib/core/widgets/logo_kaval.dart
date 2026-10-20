@@ -41,16 +41,18 @@ class BotonRedondo extends StatelessWidget {
     required this.onTap,
     this.fondo = Colors.white,
     this.tinta = KavalColors.marino,
+    this.etiqueta,
   });
 
   final IconData icono;
   final VoidCallback onTap;
   final Color fondo;
   final Color tinta;
+  final String? etiqueta;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
+    final boton = Material(
       color: fondo,
       shape: const CircleBorder(),
       elevation: 0,
@@ -63,6 +65,12 @@ class BotonRedondo extends StatelessWidget {
           child: Icon(icono, color: tinta, size: 20),
         ),
       ),
+    );
+    final nombre = etiqueta;
+    if (nombre == null) return boton;
+    return Tooltip(
+      message: nombre,
+      child: Semantics(label: nombre, button: true, child: boton),
     );
   }
 }

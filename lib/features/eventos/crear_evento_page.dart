@@ -9,10 +9,10 @@ import '../../core/utils/fechas.dart';
 import '../../core/widgets/aviso.dart';
 import '../../core/widgets/boton_coral.dart';
 import '../../core/widgets/campo_kaval.dart';
+import '../../core/widgets/estado_vacio.dart';
 import '../../core/widgets/ilustraciones.dart';
 import '../../core/widgets/kaval_avatar.dart';
 import '../../core/widgets/logo_kaval.dart';
-import '../../data/datos_ejemplo.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/evento.dart';
 import '../../models/integrante.dart';
@@ -27,26 +27,37 @@ class CrearEventoPage extends StatefulWidget {
 
 class _CrearEventoPageState extends State<CrearEventoPage> {
   final _formKey = GlobalKey<FormState>();
-  final _nombre = TextEditingController(text: 'Playa El Tunco 🌊');
+  final _nombre = TextEditingController();
   final _integrante = TextEditingController();
   final _nombreFocus = FocusNode();
   final _integranteFocus = FocusNode();
 
-  late List<Integrante> _personas;
+  List<Integrante> _personas = const [];
+  var _personasListas = false;
   PortadaEvento _portada = PortadaEvento.playa;
-  DateTime _inicio = DateTime(2026, 10, 2);
-  DateTime _fin = DateTime(2026, 10, 4);
+  DateTime? _inicio;
+  DateTime? _fin;
 
   static const _fondos = [0xFFD5F5E8, 0xFFD9ECFF, 0xFFE8D9FF, 0xFFFFE8C2, 0xFFFFE0D6];
   static const _tintas = [0xFF1FA971, 0xFF3A7BD5, 0xFF8B5CF6, 0xFFE0A100, 0xFFE07A5F];
 
   @override
-  void initState() {
-    super.initState();
-    // Arranca con el grupo del mockup para que la pantalla se vea igual.
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_personasListas) return;
+    final textos = AppLocalizations.of(context);
+    final usuario = context.read<KavalState>().usuario;
+    final nombre = usuario.nombre.trim().isEmpty ? textos.tu : usuario.primerNombre;
     _personas = [
-      for (final persona in eventoPlayaTunco().integrantes) persona,
+      Integrante(
+        id: usuario.id.isEmpty ? 'local' : usuario.id,
+        nombre: nombre,
+        colorFondo: 0xFFFFD9E0,
+        colorInicial: 0xFFE56B8A,
+        estado: EstadoUnion.admin,
+      ),
     ];
+    _personasListas = true;
   }
 
   @override
@@ -80,22 +91,31 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
   }
 
   Future<void> _elegirFecha({required bool inicio}) async {
-    final actual = inicio ? _inicio : _fin;
+    final hoy = DateTime.now();
+    final actual = inicio ? (_inicio ?? hoy) : (_fin ?? _inicio ?? hoy);
     final elegida = await showDatePicker(
       context: context,
       initialDate: actual,
       firstDate: DateTime(2024),
       lastDate: DateTime(2030),
     );
-    if (elegida == null) return;
+    if (elegida == null || !mounted) return;
     setState(() {
+      final dia = DateTime(elegida.year, elegida.month, elegida.day);
       if (inicio) {
-        _inicio = elegida;
-        if (_fin.isBefore(_inicio)) _fin = _inicio;
+        _inicio = dia;
       } else {
-        _fin = elegida;
+        _fin = dia;
       }
     });
+    _formKey.currentState?.validate();
+  }
+
+  String? _validarFechas() {
+    final textos = AppLocalizations.of(context);
+    if (_inicio == null || _fin == null) return textos.fechasObligatorias;
+    if (_fin!.isBefore(_inicio!)) return textos.fechaFinAnterior;
+    return null;
   }
 
   void _crear() {
@@ -103,8 +123,8 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
     final formulario = _formKey.currentState;
     if (formulario == null || !formulario.validate()) return;
     if (_integrante.text.trim().isNotEmpty) _agregar(textos);
-    if (_personas.isEmpty) {
-      mostrarAviso(context, textos.faltaIntegrante);
+    if (_personas.isEmpty || _inicio == null || _fin == null) {
+      formulario.validate();
       return;
     }
     formulario.save();
@@ -113,12 +133,11 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
     final evento = Evento(
       id: id,
       nombre: _nombre.text.trim(),
-      lugar: 'El Salvador',
-      inicio: _inicio,
-      fin: _fin,
+      lugar: '',
+      inicio: _inicio!,
+      fin: _fin!,
       portada: _portada,
       codigo: codigoDeEvento(_nombre.text),
-      emoji: _emoji(_portada),
       integrantes: _personas,
       gastos: const [],
       aportes: const [],
@@ -129,15 +148,6 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
     final router = GoRouter.of(context);
     if (router.canPop()) router.pop();
     router.push('/evento/$id');
-  }
-
-  String _emoji(PortadaEvento portada) {
-    return switch (portada) {
-      PortadaEvento.playa => '🌊',
-      PortadaEvento.volcan => '🌋',
-      PortadaEvento.comida => '🍽️',
-      PortadaEvento.carretera => '🚗',
-    };
   }
 
   @override
@@ -219,9 +229,9 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        Expanded(child: _fecha(textos.inicioFecha, _inicio, idioma, () => _elegirFecha(inicio: true))),
+                        Expanded(child: _fecha(textos.inicioFecha, _inicio, idioma, true)),
                         const SizedBox(width: 12),
-                        Expanded(child: _fecha(textos.finFecha, _fin, idioma, () => _elegirFecha(inicio: false))),
+                        Expanded(child: _fecha(textos.finFecha, _fin, idioma, false)),
                       ],
                     ),
                     const SizedBox(height: 14),
@@ -244,31 +254,54 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                     Row(
                       children: [
                         Text(textos.integrantesCount(_personas.length), style: KavalTexto.titulo(size: 16)),
-                        const Spacer(),
-                        TextButton(
-                          onPressed: () => context.push('/evento/$idTunco/invitar'),
-                          child: Text(textos.invitarCodigo, style: KavalTexto.cuerpo(weight: FontWeight.w800, color: KavalColors.coral)),
-                        ),
                       ],
                     ),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (final persona in _personas)
-                          InputChip(
-                            avatar: avatarDe(persona, tamano: 24),
-                            label: Text(
-                              persona.id == estado.usuario.id ? '${persona.nombre} · ${textos.tu}' : persona.nombre,
-                              style: KavalTexto.cuerpo(size: 13, color: KavalColors.marino, weight: FontWeight.w800),
+                    const SizedBox(height: 4),
+                    Text(textos.ayudaCodigo, style: KavalTexto.cuerpo(size: 13)),
+                    const SizedBox(height: 8),
+                    FormField<int>(
+                      initialValue: _personas.length,
+                      validator: (_) => _personas.isEmpty ? textos.faltaIntegrante : null,
+                      builder: (campo) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                for (final persona in _personas)
+                                  InputChip(
+                                    avatar: avatarDe(persona, tamano: 24),
+                                    label: Text(
+                                      persona.id == estado.usuario.id ? '${persona.nombre} · ${textos.tu}' : persona.nombre,
+                                      style: KavalTexto.cuerpo(size: 13, color: KavalColors.marino, weight: FontWeight.w800),
+                                    ),
+                                    onDeleted: persona.id == estado.usuario.id
+                                        ? null
+                                        : () => setState(() => _personas.remove(persona)),
+                                    backgroundColor: Colors.white,
+                                    side: const BorderSide(color: KavalColors.borde),
+                                  ),
+                              ],
                             ),
-                            onDeleted: persona.id == estado.usuario.id
-                                ? null
-                                : () => setState(() => _personas.remove(persona)),
-                            backgroundColor: Colors.white,
-                            side: const BorderSide(color: KavalColors.borde),
-                          ),
-                      ],
+                            if (_personas.isEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: EstadoVacio(
+                                  icono: Icons.group_outlined,
+                                  titulo: textos.sinIntegrantes,
+                                  cuerpo: textos.sinIntegrantesCuerpo,
+                                ),
+                              ),
+                            if (campo.errorText != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 6, left: 12),
+                                child: Text(campo.errorText!, style: KavalTexto.cuerpo(size: 12, color: KavalColors.rojo)),
+                              ),
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 12),
                     Row(
@@ -327,34 +360,55 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
     );
   }
 
-  Widget _fecha(String etiqueta, DateTime fecha, String idioma, VoidCallback onTap) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        EtiquetaCampo(etiqueta),
-        Material(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-              decoration: BoxDecoration(
+  Widget _fecha(String etiqueta, DateTime? fecha, String idioma, bool inicio) {
+    return FormField<DateTime>(
+      initialValue: fecha,
+      validator: (_) => _validarFechas(),
+      builder: (campo) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            EtiquetaCampo(etiqueta),
+            Material(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              child: InkWell(
+                onTap: () => _elegirFecha(inicio: inicio),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: KavalColors.borde),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.calendar_today_outlined, size: 16, color: KavalColors.coral),
-                  const SizedBox(width: 8),
-                  Text(fechaConAnio(fecha, idioma), style: KavalTexto.cuerpo(color: KavalColors.marino, weight: FontWeight.w800)),
-                ],
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: campo.hasError ? KavalColors.rojo : KavalColors.borde),
+                  ),
+                  child: Row(
+                    children: [
+                      const ExcludeSemantics(
+                        child: Icon(Icons.calendar_today_outlined, size: 16, color: KavalColors.coral),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          fecha == null ? AppLocalizations.of(context).elegirFecha : fechaConAnio(fecha, idioma),
+                          style: KavalTexto.cuerpo(
+                            color: fecha == null ? KavalColors.gris : KavalColors.marino,
+                            weight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-      ],
+            if (campo.errorText != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 6, left: 12),
+                child: Text(campo.errorText!, style: KavalTexto.cuerpo(size: 12, color: KavalColors.rojo)),
+              ),
+          ],
+        );
+      },
     );
   }
 

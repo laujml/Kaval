@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/widgets/barra_inferior.dart';
-import '../../data/datos_ejemplo.dart';
 import '../../l10n/app_localizations.dart';
 import '../../state/kaval_state.dart';
 
@@ -42,8 +41,11 @@ class NavShell extends StatelessWidget {
         },
         onMicrofono: () {
           final estado = context.read<KavalState>();
-          final id = estado.buscar(idTunco)?.id ?? estado.eventos.firstOrNull?.id;
-          if (id == null) return;
+          final id = estado.eventos.firstOrNull?.id;
+          if (id == null) {
+            context.push('/nuevo-evento');
+            return;
+          }
           context.push('/evento/$id/dictar');
         },
       ),

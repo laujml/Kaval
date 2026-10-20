@@ -2,10 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../core/eventos/actividad_evento.dart';
+import '../core/gastos/pagador.dart';
 import '../core/liquidacion/liquidacion.dart';
 import '../core/red/cliente_api.dart';
-import '../core/utils/etiquetas.dart';
-import '../data/datos_ejemplo.dart';
+import '../core/voz/interpretar_dictado.dart';
 import '../data/repositorios/repositorio_datos.dart';
 import '../models/aporte_efectivo.dart';
 import '../models/evento.dart';
@@ -17,12 +18,22 @@ import '../models/usuario.dart';
 /// Estado de la materia: un ChangeNotifier que las pantallas escuchan.
 class KavalState extends ChangeNotifier {
   KavalState({this.datos})
-      : usuario = usuarioDemo(),
+      : usuario = const Usuario(id: '', nombre: '', correo: ''),
         eventos = const [],
-        borrador = borradorGasolina();
+        borrador = KavalState.borradorVacio;
 
   final RepositorioDatos? datos;
   StreamSubscription<List<Evento>>? _nube;
+
+  static final borradorVacio = Gasto(
+    id: 'borrador',
+    concepto: '',
+    montoCentavos: 0,
+    participanteIds: const [],
+    categoria: CategoriaGasto.comida,
+    metodo: MetodoPago.tarjeta,
+    fecha: DateTime.utc(2026, 1, 1),
+  );
 
   Locale locale = const Locale('es');
   Usuario usuario;
@@ -94,15 +105,23 @@ class KavalState extends ChangeNotifier {
     return calcularLiquidacion(evento);
   }
 
+  /// Viajes que todavía no terminan: futuros o en curso.
+  List<Evento> get eventosActivos => eventosActivosEn(eventos, DateTime.now());
+
+  /// Solo los que ya pasaron su fecha de fin.
+  List<Evento> get eventosHistorial => eventosHistorialEn(eventos, DateTime.now());
+
+  /// Activos, y si hay filtro de portada, solo esa.
   List<Evento> get eventosFiltrados {
+    final base = eventosActivos;
     final portada = filtro;
-    if (portada == null) return eventos;
-    return eventos.where((evento) => evento.portada == portada).toList();
+    if (portada == null) return base;
+    return base.where((evento) => evento.portada == portada).toList();
   }
 
   int saldoEn(Evento evento) => calcularLiquidacion(evento).saldoDe(usuario.id);
 
-  /// Suma de saldos a favor, en todos los viajes. En el perfil local incluye Flores.
+  /// Suma de saldos a favor, en todos los viajes.
   int get teDeben {
     var suma = 0;
     for (final evento in eventos) {
@@ -127,14 +146,13 @@ class KavalState extends ChangeNotifier {
   void entrar({required String nombre, required String correo, bool local = false}) {
     _soltarNube();
     _sesionNube = false;
-    final limpio = nombre.trim().isEmpty ? usuario.nombre : nombre.trim();
     usuario = Usuario(
-      id: local ? idLaura : usuario.id,
-      nombre: limpio,
-      correo: correo.trim().isEmpty ? usuario.correo : correo.trim(),
+      id: local ? 'local' : usuario.id,
+      nombre: nombre.trim(),
+      correo: correo.trim(),
       local: local,
     );
-    if (local) eventos = eventosIniciales();
+    eventos = const [];
     notifyListeners();
   }
 
@@ -149,7 +167,7 @@ class KavalState extends ChangeNotifier {
     await nube.usuarios.guardar(cuenta);
     _nube = nube.eventos.escuchar(cuenta.id).listen(
       (lista) {
-        eventos = lista;
+        eventos = fusionarEventos(eventos, lista);
         notifyListeners();
       },
       onError: (Object error) {
@@ -161,8 +179,9 @@ class KavalState extends ChangeNotifier {
   Future<void> salir() async {
     _soltarNube();
     _sesionNube = false;
-    usuario = usuarioDemo();
+    usuario = const Usuario(id: '', nombre: '', correo: '');
     eventos = const [];
+    borrador = borradorVacio;
     notifyListeners();
   }
 
@@ -170,16 +189,6 @@ class KavalState extends ChangeNotifier {
     final nube = datos;
     if (!enLaNube || nube == null) return;
     await nube.usuarios.borrar(usuario.id);
-  }
-
-  Future<void> cargarEjemploTunco() async {
-    if (!enLaNube) {
-      final evento = eventoPlayaTunco();
-      eventos = [evento, ...eventos.where((actual) => actual.id != evento.id)];
-      notifyListeners();
-      return;
-    }
-    await datos!.cargarTunco(usuario);
   }
 
   void crearEvento(Evento evento) {
@@ -257,21 +266,35 @@ class KavalState extends ChangeNotifier {
     required String concepto,
     required CategoriaGasto categoria,
     required String frase,
+    QuienPagoDictado quien = QuienPagoDictado.ninguno,
+    String? nombrePagador,
+    bool entreTodos = false,
   }) {
     final evento = buscar(eventoId);
     if (evento == null) return;
     final ids = [for (final persona in evento.integrantes) persona.id];
-    final pagador = ids.contains(usuario.id) ? usuario.id : (ids.isEmpty ? null : ids.first);
+    final propio = ids.contains(usuario.id) ? usuario.id : null;
+    String? pagador = propio;
+    var metodo = MetodoPago.tarjeta;
+    if (quien == QuienPagoDictado.fondo) {
+      pagador = null;
+      metodo = MetodoPago.efectivoGrupo;
+    } else if (quien == QuienPagoDictado.nombrado && nombrePagador != null) {
+      pagador = buscarPagador(evento.integrantes, nombrePagador);
+      metodo = MetodoPago.tarjeta;
+    } else if (quien == QuienPagoDictado.tu) {
+      pagador = propio;
+      metodo = MetodoPago.tarjeta;
+    }
     fraseOida = frase;
     borrador = Gasto(
       id: 'borrador-voz',
       concepto: concepto,
       montoCentavos: montoCentavos,
       pagadorId: pagador,
-      participanteIds: ids,
+      participanteIds: entreTodos || ids.isNotEmpty ? ids : const [],
       categoria: categoria,
-      metodo: MetodoPago.tarjeta,
-      emoji: emojiCategoria(categoria),
+      metodo: metodo,
       dictado: true,
       fecha: DateTime.now(),
     );
@@ -298,9 +321,13 @@ class KavalState extends ChangeNotifier {
           participanteIds: borrador.participanteIds,
           categoria: borrador.categoria,
           metodo: borrador.metodo,
-          emoji: borrador.emoji,
           dictado: true,
           fecha: DateTime.now(),
+          modoDivision: borrador.modoDivision,
+          partes: borrador.partes,
+          items: borrador.items,
+          propinaPorcentaje: borrador.propinaPorcentaje,
+          extrasCentavos: borrador.extrasCentavos,
         ),
       );
     }
