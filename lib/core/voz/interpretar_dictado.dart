@@ -1,17 +1,30 @@
 import '../utils/dinero.dart';
 import '../../models/gasto.dart';
 
+/// Quién adelantó el dinero, según la frase. `ninguno` deja el valor del formulario.
+enum QuienPagoDictado { ninguno, tu, fondo, nombrado }
+
 /// Lo que se entendió de una frase. El concepto puede ir vacío: el formulario lo pide.
 class GastoDictado {
   const GastoDictado({
     required this.montoCentavos,
     required this.concepto,
     required this.categoria,
+    this.quien = QuienPagoDictado.ninguno,
+    this.nombrePagador,
+    this.entreTodos = false,
   });
 
   final int montoCentavos;
   final String concepto;
   final CategoriaGasto categoria;
+  final QuienPagoDictado quien;
+
+  /// Primer nombre cuando la frase dice «Ana pagó».
+  final String? nombrePagador;
+
+  /// La frase reparte entre todo el grupo.
+  final bool entreTodos;
 }
 
 const _relleno = [
@@ -45,14 +58,24 @@ const _relleno = [
   'bucks',
   'pesos',
   'peso',
+  'yo',
+  'me',
   'de',
   'del',
+  'desde',
+  'fondo',
+  'fund',
+  'from',
   'por',
   'para',
   'for',
   'on',
   'of',
   'the',
+  'invite',
+  'invité',
+  'invitamos',
+  'invited',
   'la',
   'el',
   'los',
@@ -101,12 +124,39 @@ GastoDictado? interpretarDictado(String frase) {
   final centavos = _centavos(numero.group(0)!);
   if (centavos == null) return null;
   final resto = '${limpio.substring(0, numero.start)} ${limpio.substring(numero.end)}';
-  final concepto = _concepto(resto);
+  final quien = _quien(limpio);
+  final concepto = _concepto(resto, quien.nombre);
   return GastoDictado(
     montoCentavos: centavos,
     concepto: concepto,
     categoria: _categoria('$limpio $concepto'),
+    quien: quien.quien,
+    nombrePagador: quien.nombre,
+    entreTodos: quien.entreTodos,
   );
+}
+
+const _noEsNombre = {'yo', 'i', 'we', 'me', 'el', 'la', 'un', 'una', 'del', 'de'};
+
+({QuienPagoDictado quien, String? nombre, bool entreTodos}) _quien(String frase) {
+  // El acento no es «palabra» para \b, así que el corte se hace con espacio.
+  const corte = r'(?=\s|$)';
+  if (RegExp('(?:^|\\s)(?:gastamos|del fondo|desde el fondo|we spent|from the fund)$corte').hasMatch(frase)) {
+    return (quien: QuienPagoDictado.fondo, nombre: null, entreTodos: true);
+  }
+  final nombrado = RegExp('(?:^|\\s)([a-záéíóúüñ]{2,})\\s+(pag[oó]|paid)$corte').firstMatch(frase);
+  final crudo = nombrado?.group(1);
+  if (crudo != null && !_noEsNombre.contains(crudo)) {
+    return (
+      quien: QuienPagoDictado.nombrado,
+      nombre: crudo[0].toUpperCase() + crudo.substring(1),
+      entreTodos: true,
+    );
+  }
+  if (RegExp('(?:^|\\s)(?:yo pagu[eé]|pagu[eé]|invit[eé]|i paid|i spent)$corte').hasMatch(frase)) {
+    return (quien: QuienPagoDictado.tu, nombre: null, entreTodos: true);
+  }
+  return (quien: QuienPagoDictado.ninguno, nombre: null, entreTodos: false);
 }
 
 /// Elige es-SV o inglés según el idioma de la app y lo que el teléfono ofrece.
@@ -139,11 +189,12 @@ int? _centavos(String crudo) {
   return valor;
 }
 
-String _concepto(String resto) {
+String _concepto(String resto, String? nombrePagador) {
+  final nombre = nombrePagador?.toLowerCase();
   final palabras = resto
       .replaceAll(RegExp(r'[$€]'), ' ')
       .split(RegExp(r'\s+'))
-      .where((palabra) => palabra.isNotEmpty && !_relleno.contains(palabra))
+      .where((palabra) => palabra.isNotEmpty && !_relleno.contains(palabra) && palabra != nombre)
       .toList();
   if (palabras.isEmpty) return '';
   final texto = palabras.join(' ');

@@ -7,6 +7,7 @@ import '../../core/theme/kaval_colors.dart';
 import '../../core/theme/kaval_texto.dart';
 import '../../core/utils/dinero.dart';
 import '../../core/utils/etiquetas.dart';
+import '../../core/utils/fechas.dart';
 import '../../core/widgets/aviso.dart';
 import '../../core/widgets/boton_coral.dart';
 import '../../core/widgets/ilustraciones.dart';
@@ -64,14 +65,20 @@ class EfectivoPage extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('💵 ${textos.efectivoTitulo}', style: KavalTexto.cuerpo(weight: FontWeight.w800, color: KavalColors.verde)),
+                                  Row(
+                                    children: [
+                                      const ExcludeSemantics(child: Icon(Icons.payments_outlined, color: KavalColors.verde, size: 18)),
+                                      const SizedBox(width: 6),
+                                      Text(textos.efectivoTitulo, style: KavalTexto.cuerpo(weight: FontWeight.w800, color: KavalColors.verde)),
+                                    ],
+                                  ),
                                   Text(textos.efectivoDisponible, style: KavalTexto.cuerpo()),
                                   Text(usd(resultado.sobrante), style: KavalTexto.titulo(size: 36)),
                                   Text(textos.deReunidos(usd(resultado.reunido)), style: KavalTexto.cuerpo()),
                                 ],
                               ),
                             ),
-                            const IlustracionBilletera(),
+                            IlustracionBilletera(semanticsLabel: textos.efectivoTitulo),
                           ],
                         ),
                         const SizedBox(height: 10),
@@ -128,7 +135,7 @@ class EfectivoPage extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(evento.integrante(aporte.integranteId)!.nombre, style: KavalTexto.cuerpo(weight: FontWeight.w800, color: KavalColors.marino)),
-                                  Text('${aporte.emoji} ${textoAporte(textos, aporte.descripcion)}', style: KavalTexto.cuerpo(size: 12)),
+                                  Text(textoAporte(textos, aporte.descripcion), style: KavalTexto.cuerpo(size: 12)),
                                 ],
                               ),
                             ),
@@ -155,7 +162,7 @@ class EfectivoPage extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  for (final gasto in enEfectivo) _GastoEfectivo(gasto: gasto),
+                  for (final gasto in enEfectivo) _GastoEfectivo(gasto: gasto, idioma: estado.idioma),
                 ],
               ),
             ),
@@ -187,32 +194,36 @@ class EfectivoPage extends StatelessWidget {
 }
 
 class _GastoEfectivo extends StatelessWidget {
-  const _GastoEfectivo({required this.gasto});
+  const _GastoEfectivo({required this.gasto, required this.idioma});
 
   final Gasto gasto;
+  final String idioma;
 
   @override
   Widget build(BuildContext context) {
     final textos = AppLocalizations.of(context);
-    final hora = switch (gasto.id) {
-      'pupusas' => textos.hoy1220,
-      'cocos' => textos.hoy1505,
-      _ => '',
-    };
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: TarjetaKaval(
         radio: 18,
         child: Row(
           children: [
-            Text(gasto.emoji, style: const TextStyle(fontSize: 28)),
+            IconoCategoria(
+              categoria: gasto.categoria,
+              tamano: 28,
+              color: KavalColors.coral,
+              etiqueta: nombreCategoria(textos, gasto.categoria),
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(gasto.concepto, style: KavalTexto.cuerpo(weight: FontWeight.w800, color: KavalColors.marino)),
-                  Text('${textos.personasCount(gasto.participanteIds.length)} · $hora', style: KavalTexto.cuerpo(size: 12)),
+                  Text(
+                    '${textos.personasCount(gasto.participanteIds.length)} · ${fechaConAnio(gasto.fecha, idioma)}',
+                    style: KavalTexto.cuerpo(size: 12),
+                  ),
                 ],
               ),
             ),

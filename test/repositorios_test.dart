@@ -3,8 +3,9 @@ import 'dart:math';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kaval/core/invitaciones/codigo_evento.dart';
-import 'package:kaval/data/datos_ejemplo.dart';
+import 'fixtures/datos_ejemplo.dart';
 import 'package:kaval/data/repositorios/repositorio_datos.dart';
+import 'package:kaval/models/evento.dart';
 import 'package:kaval/models/gasto.dart';
 import 'package:kaval/models/integrante.dart';
 import 'package:kaval/models/usuario.dart';
@@ -30,7 +31,7 @@ void main() {
     final perfil = await datos.usuarios.leer(cuenta.id);
     expect(perfil?.correo, cuenta.correo);
 
-    await datos.cargarTunco(cuenta);
+    await guardarTunco(datos, cuenta);
     final evento = await datos.eventos.leer('tunco-${cuenta.id}');
     final esperado = tuncoParaCuenta(cuenta);
     expect(evento, isNotNull);
@@ -43,14 +44,14 @@ void main() {
   test('un invitado sin cuenta no queda en integranteIds', () async {
     final db = FakeFirebaseFirestore();
     final datos = RepositorioDatos(db);
-    await datos.cargarTunco(cuenta);
+    await guardarTunco(datos, cuenta);
     final doc = await db.collection('eventos').doc('tunco-${cuenta.id}').get();
     expect(doc.data()?['integranteIds'], [cuenta.id]);
   });
 
   test('unirse con el código agrega a la persona', () async {
     final datos = RepositorioDatos(FakeFirebaseFirestore());
-    await datos.cargarTunco(cuenta);
+    await guardarTunco(datos, cuenta);
     const ana = Usuario(
       id: 'ana-cuenta-de-prueba-123456',
       nombre: 'Ana Lopez',
@@ -63,7 +64,7 @@ void main() {
 
   test('si el código ya existe, se genera otro', () async {
     final datos = RepositorioDatos(FakeFirebaseFirestore());
-    await datos.cargarTunco(cuenta);
+    await guardarTunco(datos, cuenta);
     const otra = Usuario(
       id: 'bbbbbbbbbbbbbbbbbbbb',
       nombre: 'Luis',
@@ -77,7 +78,7 @@ void main() {
 
   test('la escucha marca sincronizado cuando la escritura ya se confirmó', () async {
     final datos = RepositorioDatos(FakeFirebaseFirestore());
-    await datos.cargarTunco(cuenta);
+    await guardarTunco(datos, cuenta);
     final lista = await datos.eventos.escuchar(cuenta.id).first;
     expect(lista.single.sincronizado, isTrue);
     expect(lista.single.nombre, 'Playa El Tunco');
@@ -86,7 +87,7 @@ void main() {
   test('un gasto en la nube queda pendiente hasta que Firestore lo confirma', () async {
     final db = FakeFirebaseFirestore();
     final datos = RepositorioDatos(db);
-    await datos.cargarTunco(cuenta);
+    await guardarTunco(datos, cuenta);
     final estado = KavalState(datos: datos);
     addTearDown(estado.dispose);
     await estado.entrarEnLaNube(cuenta);
@@ -106,11 +107,36 @@ void main() {
     final estado = KavalState();
     addTearDown(estado.dispose);
     estado.entrar(nombre: 'Laura Angel', correo: 'laura.angel@email.com', local: true);
-    final id = estado.eventos.first.id;
-    estado.agregarGasto(id, _taxi());
-    expect(estado.buscar(id)!.sincronizado, isTrue);
-    expect(estado.buscar(id)!.gastos.first.concepto, 'Taxi avion');
+    expect(estado.eventos, isEmpty);
+    estado.crearEvento(_salidaLocal());
+    estado.agregarGasto('salida-local', _taxi());
+    expect(estado.buscar('salida-local')!.sincronizado, isTrue);
+    expect(estado.buscar('salida-local')!.gastos.first.concepto, 'Taxi avion');
   });
+}
+
+Evento _salidaLocal() {
+  return Evento(
+    id: 'salida-local',
+    nombre: 'Salida',
+    lugar: '',
+    inicio: DateTime(2026, 10, 1),
+    fin: DateTime(2026, 10, 1),
+    portada: PortadaEvento.playa,
+    codigo: 'SALIDA-1A',
+    custodioId: 'local',
+    integrantes: const [
+      Integrante(
+        id: 'local',
+        nombre: 'Laura',
+        colorFondo: 0,
+        colorInicial: 0,
+        estado: EstadoUnion.admin,
+      ),
+    ],
+    gastos: const [],
+    aportes: const [],
+  );
 }
 
 Gasto _taxi() {

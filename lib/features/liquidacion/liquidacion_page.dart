@@ -32,7 +32,9 @@ class LiquidacionPage extends StatelessWidget {
     final estado = context.watch<KavalState>();
     final evento = estado.buscar(eventoId);
     if (evento == null) return Scaffold(body: Center(child: Text(textos.sinEventos)));
-    final resultado = calcularLiquidacion(evento);
+    final cuentas = calcularSaldos(evento);
+    final resultado = cuentas.copyWith(transferencias: liquidar(cuentas.saldos));
+    final enCero = saldosEnCero(resultado.saldos);
     final devoluciones = resultado.devolucion.entries.where((e) => e.value > 0).map((e) {
       final nombre = evento.integrante(e.key)?.nombre ?? e.key;
       return '$nombre ${usd(e.value)}';
@@ -49,7 +51,11 @@ class LiquidacionPage extends StatelessWidget {
                 children: [
                   BotonRedondo(icono: Icons.chevron_left, onTap: () => volver(context)),
                   Expanded(child: Text(textos.liquidacion, textAlign: TextAlign.center, style: KavalTexto.titulo(size: 18))),
-                  BotonRedondo(icono: Icons.ios_share_rounded, onTap: () => context.push('/evento/$eventoId/resumen')),
+                  BotonRedondo(
+                    icono: Icons.share,
+                    etiqueta: textos.compartir,
+                    onTap: () => context.push('/evento/$eventoId/resumen'),
+                  ),
                 ],
               ),
             ),
@@ -72,19 +78,39 @@ class LiquidacionPage extends StatelessWidget {
                                 textos.eventoTotal(evento.nombre, usd(resultado.totalGastos)),
                                 style: KavalTexto.cuerpo(color: KavalColors.marino),
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '✨ ${textos.soloTransferencias(resultado.transferencias.length)}',
-                                style: KavalTexto.cuerpo(weight: FontWeight.w800, color: KavalColors.verde),
-                              ),
+                              if (resultado.transferencias.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const ExcludeSemantics(child: Icon(Icons.lightbulb_outline, size: 16, color: KavalColors.verde)),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        textos.soloTransferencias(resultado.transferencias.length),
+                                        style: KavalTexto.cuerpo(weight: FontWeight.w800, color: KavalColors.verde),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ],
                           ),
                         ),
-                        const IlustracionMonedas(),
+                        const IlustracionCuentas(),
                       ],
                     ),
                   ),
                   const SizedBox(height: 12),
+                  if (enCero)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(textos.nadieDebe, style: KavalTexto.cuerpo()),
+                    )
+                  else if (resultado.transferencias.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(textos.saldosPendientes, style: KavalTexto.cuerpo()),
+                    ),
                   for (final pago in resultado.transferencias)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8),
@@ -94,15 +120,43 @@ class LiquidacionPage extends StatelessWidget {
                         eresTu: pago.deudorId == estado.usuario.id,
                       ),
                     ),
+                  if (resultado.faltanteEfectivo > 0)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(color: KavalColors.aviso, borderRadius: BorderRadius.circular(18)),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const ExcludeSemantics(child: Icon(Icons.payments_outlined, color: KavalColors.marino)),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              textos.fondoSinCubrir(usd(resultado.faltanteEfectivo)),
+                              style: KavalTexto.cuerpo(color: KavalColors.marino, weight: FontWeight.w800),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   if (resultado.sobrante > 0)
                     GestureDetector(
                       onTap: () => context.push('/evento/$eventoId/efectivo'),
                       child: Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(color: KavalColors.aviso, borderRadius: BorderRadius.circular(18)),
-                        child: Text(
-                          '💵 ${textos.efectivoSobrante(usd(resultado.sobrante))}\n${textos.seDevuelven(devoluciones)}',
-                          style: KavalTexto.cuerpo(color: KavalColors.marino, weight: FontWeight.w800),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const ExcludeSemantics(child: Icon(Icons.payments_outlined, color: KavalColors.marino)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                '${textos.efectivoSobrante(usd(resultado.sobrante))}\n${textos.seDevuelven(devoluciones)}',
+                                style: KavalTexto.cuerpo(color: KavalColors.marino, weight: FontWeight.w800),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -113,7 +167,7 @@ class LiquidacionPage extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: BotonCoral(
                 texto: textos.compartirResumen,
-                icono: const Icon(Icons.chat_rounded, color: Colors.white),
+                icono: const Icon(Icons.share, color: Colors.white),
                 onPressed: () => unawaited(compartirTexto(context, textoResumen(textos, evento, resultado))),
               ),
             ),

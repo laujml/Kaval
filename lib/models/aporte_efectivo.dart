@@ -8,14 +8,12 @@ class AporteEfectivo {
     required this.montoCentavos,
     required this.descripcion,
     required this.fecha,
-    this.emoji = '💵',
   });
 
   final String id;
   final String integranteId;
   final int montoCentavos;
   final String descripcion;
-  final String emoji;
   final DateTime fecha;
 
   Map<String, dynamic> toMap() {
@@ -23,7 +21,6 @@ class AporteEfectivo {
       'integranteId': integranteId,
       'montoCentavos': montoCentavos,
       'descripcion': descripcion,
-      'emoji': emoji,
       'fecha': fecha.millisecondsSinceEpoch,
     };
   }
@@ -34,7 +31,6 @@ class AporteEfectivo {
       integranteId: textoDe(mapa['integranteId']),
       montoCentavos: enteroDe(mapa['montoCentavos']),
       descripcion: textoDe(mapa['descripcion']),
-      emoji: textoDe(mapa['emoji'], siVacio: '💵'),
       fecha: fechaDe(mapa['fecha']),
     );
   }

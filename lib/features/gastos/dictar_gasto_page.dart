@@ -134,6 +134,9 @@ class _DictarGastoPageState extends State<DictarGastoPage> with SingleTickerProv
           concepto: oido.concepto,
           categoria: oido.categoria,
           frase: _texto.trim(),
+          quien: oido.quien,
+          nombrePagador: oido.nombrePagador,
+          entreTodos: oido.entreTodos,
         );
     if (!mounted) return;
     context.push('/evento/${widget.eventoId}/gasto?voz=1');
@@ -165,7 +168,7 @@ class _DictarGastoPageState extends State<DictarGastoPage> with SingleTickerProv
                     const Spacer(),
                     Chip(
                       label: Text(
-                        '${evento?.emoji ?? ''} ${evento?.nombre ?? ''}',
+                        evento?.nombre ?? '',
                         style: KavalTexto.cuerpo(color: KavalColors.marino, weight: FontWeight.w800),
                       ),
                       backgroundColor: Colors.white,
@@ -179,7 +182,7 @@ class _DictarGastoPageState extends State<DictarGastoPage> with SingleTickerProv
                 ),
                 const SizedBox(height: 18),
                 Text(
-                  _escuchando ? '● ${textos.escuchando}' : textos.transcribiendo,
+                  _escuchando ? textos.escuchando : textos.transcribiendo,
                   style: KavalTexto.cuerpo(
                     weight: FontWeight.w800,
                     color: _escuchando ? KavalColors.rojo : KavalColors.gris,
@@ -217,9 +220,23 @@ class _DictarGastoPageState extends State<DictarGastoPage> with SingleTickerProv
                   ],
                 ),
                 const SizedBox(height: 16),
-                Text('💡 ${textos.tipDictado}', textAlign: TextAlign.center, style: KavalTexto.cuerpo(size: 13)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const ExcludeSemantics(child: Icon(Icons.lightbulb_outline, size: 16, color: KavalColors.coral)),
+                    const SizedBox(width: 6),
+                    Flexible(child: Text(textos.tipDictado, textAlign: TextAlign.center, style: KavalTexto.cuerpo(size: 13))),
+                  ],
+                ),
                 const SizedBox(height: 8),
-                Text('🔒 ${textos.soloTexto}', style: KavalTexto.cuerpo(size: 12)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const ExcludeSemantics(child: Icon(Icons.lock_outline, size: 14, color: KavalColors.gris)),
+                    const SizedBox(width: 6),
+                    Flexible(child: Text(textos.soloTexto, style: KavalTexto.cuerpo(size: 12))),
+                  ],
+                ),
               ],
             ),
           ),

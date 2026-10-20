@@ -7,6 +7,7 @@ import '../../core/theme/kaval_medidas.dart';
 import '../../core/theme/kaval_paleta.dart';
 import '../../core/theme/kaval_texto.dart';
 import '../../core/utils/fechas.dart';
+import '../../core/widgets/boton_coral.dart';
 import '../../core/widgets/estado_vacio.dart';
 import '../../core/widgets/fila_monto.dart';
 import '../../core/widgets/tarjeta_kaval.dart';
@@ -22,13 +23,14 @@ class HistorialPage extends StatelessWidget {
     final textos = AppLocalizations.of(context);
     final estado = context.watch<KavalState>();
     final paleta = KavalPaleta.de(context);
-    final vacio = estado.eventos.isEmpty;
+    final historial = estado.eventosHistorial;
+    final vacio = historial.isEmpty;
     return Scaffold(
       body: SafeArea(
         child: MarcoKaval(
           child: ListView.builder(
             padding: KavalMedidas.pagina,
-            itemCount: vacio ? 2 : estado.eventos.length + 1,
+            itemCount: vacio ? 2 : historial.length + 1,
             itemBuilder: (context, indice) {
               if (indice == 0) {
                 return Padding(
@@ -44,13 +46,19 @@ class HistorialPage extends StatelessWidget {
                 );
               }
               if (vacio) {
+                final sinNada = estado.eventos.isEmpty;
                 return EstadoVacio(
                   icono: Icons.luggage_outlined,
-                  titulo: textos.sinEventos,
-                  cuerpo: textos.historialVacio,
+                  titulo: sinNada ? textos.sinEventos : textos.historial,
+                  cuerpo: sinNada ? textos.sinEventosCuerpo : textos.historialVacio,
+                  accion: BotonCoral(
+                    texto: sinNada ? textos.nuevoEvento : textos.eventosActivos,
+                    icono: Icon(sinNada ? Icons.add : Icons.event_available_outlined, color: Colors.white),
+                    onPressed: () => sinNada ? context.push('/nuevo-evento') : context.go('/inicio'),
+                  ),
                 );
               }
-              final evento = estado.eventos[indice - 1];
+              final evento = historial[indice - 1];
               return Padding(
                 padding: const EdgeInsets.only(bottom: KavalMedidas.sm),
                 child: _Viaje(evento: evento, idioma: estado.idioma),
@@ -72,14 +80,16 @@ class _Viaje extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textos = AppLocalizations.of(context);
+    final lugar = evento.lugar.trim();
+    final fechas = rangoFechas(evento.inicio, evento.fin, idioma);
     return TarjetaKaval(
       onTap: () => context.push('/evento/${evento.id}'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('${evento.nombre} ${evento.emoji}', style: KavalTexto.titulo(size: 18, color: KavalColors.marino)),
+          Text(evento.nombre, style: KavalTexto.titulo(size: 18, color: KavalColors.marino)),
           Text(
-            textos.lugarFecha(evento.lugar, rangoFechas(evento.inicio, evento.fin, idioma)),
+            lugar.isEmpty ? fechas : textos.lugarFecha(lugar, fechas),
             style: KavalTexto.cuerpo(size: 12, color: KavalColors.gris),
           ),
           const SizedBox(height: KavalMedidas.xs),
@@ -89,7 +99,7 @@ class _Viaje extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: KavalMedidas.xs),
               child: FilaMonto(
-                etiqueta: '${gasto.emoji} ${gasto.concepto}',
+                etiqueta: gasto.concepto,
                 centavos: gasto.montoCentavos,
                 conSigno: false,
                 neutro: true,

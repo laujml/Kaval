@@ -34,10 +34,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get crearCuenta => 'Crear cuenta';
 
   @override
-  String get holaDeNuevo => '¡Hola de nuevo! 👋';
+  String get holaDeNuevo => '¡Hola de nuevo!';
 
   @override
-  String get bienvenida => '¡Bienvenida a Kaval! 👋';
+  String get bienvenida => '¡Bienvenida a Kaval!';
 
   @override
   String get viajesSincronizados => 'Tus viajes y cuentas, sincronizados.';
@@ -108,7 +108,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get contrasenasNoCoinciden => 'Las contraseñas no coinciden';
 
   @override
-  String get cuentaCreada => 'Cuenta creada ✅';
+  String get cuentaCreada => 'Cuenta creada';
 
   @override
   String get sesionIniciada => 'Sesión iniciada';
@@ -144,7 +144,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get pupusas => 'Pupusas';
 
   @override
-  String get efectivoCinco => 'Efectivo · 5 personas';
+  String get efectivoCinco => 'Efectivo del grupo';
 
   @override
   String get burbujaVoz => '“pagué 24 de gasolina”';
@@ -153,7 +153,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get gasolina => 'Gasolina';
 
   @override
-  String get pagoLaura => 'Pagó Laura · 6 personas';
+  String get pagoLaura => 'Entre el grupo';
 
   @override
   String get inicio => 'Inicio';
@@ -169,7 +169,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String holaNombre(String nombre) {
-    return 'Hola, $nombre 👋';
+    return 'Hola, $nombre';
   }
 
   @override
@@ -216,7 +216,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get total => 'Total';
 
   @override
-  String get tipVoz => 'Tip: solo di “pagué 24 de gasolina”';
+  String get tipVoz =>
+      'Di el monto y el concepto. Por ejemplo: pagué 24 de gasolina.';
 
   @override
   String get nuevoEvento => 'Nuevo evento';
@@ -364,7 +365,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get gastoGuardado => 'Gasto guardado';
 
   @override
-  String get conceptoEjemplo => 'Cena de mariscos 🦐';
+  String get conceptoEjemplo => 'Cena';
 
   @override
   String get escuchando => 'Escuchando…';
@@ -382,8 +383,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get escribir => 'Escribir';
 
   @override
-  String get tipDictado =>
-      'Prueba: “Ana pagó 18.50 de pupusas para todos menos Carla”';
+  String get tipDictado => 'Prueba: “pagué 18.50 de comida para el grupo”';
 
   @override
   String get soloTexto => 'Solo guardamos el texto, nunca el audio';
@@ -716,7 +716,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get teUniste => 'Listo, entraste al viaje';
 
   @override
-  String get sinEventos => 'Todavía no hay eventos en esta categoría';
+  String get sinEventos => 'Todavía no hay eventos';
 
   @override
   String get viajesRecientes => 'Viajes recientes';
@@ -890,12 +890,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Te enviamos un enlace para elegir una contraseña nueva.';
 
   @override
-  String get cargarTunco => 'Cargar ejemplo de Playa El Tunco';
-
-  @override
-  String get tuncoCargado => 'Playa El Tunco quedó cargado';
-
-  @override
   String get agregarInvitado => 'Agregar por nombre';
 
   @override
@@ -966,4 +960,190 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get compartirFallo => 'No se pudo abrir el menú para compartir.';
+
+  @override
+  String get sinEventosCuerpo =>
+      'Crea un viaje para empezar a anotar los gastos.';
+
+  @override
+  String get sinEventosFiltro => 'Todavía no hay eventos en esta categoría';
+
+  @override
+  String get sinGastos => 'Todavía no hay gastos';
+
+  @override
+  String get sinGastosCuerpo => 'Agrega el primero a mano o dictándolo.';
+
+  @override
+  String get sinIntegrantes => 'Todavía no hay integrantes';
+
+  @override
+  String get sinIntegrantesCuerpo =>
+      'Agrega a alguien por nombre o con el código de invitación.';
+
+  @override
+  String get elegirFecha => 'Elegir fecha';
+
+  @override
+  String get fechasObligatorias => 'Elige la fecha de inicio y la de fin';
+
+  @override
+  String get fechaFinAnterior => 'El fin no puede ser anterior al inicio';
+
+  @override
+  String get copiar => 'Copiar';
+
+  @override
+  String get compartir => 'Compartir';
+
+  @override
+  String get ayudaCodigo =>
+      'Agrega personas por nombre. Cuando el evento exista, también puedes invitar con el código.';
+
+  @override
+  String get nombreLocal => 'Invitado';
+
+  @override
+  String get partesIguales => 'Iguales';
+
+  @override
+  String get montosExactos => 'Montos';
+
+  @override
+  String get porConsumo => 'Ítems';
+
+  @override
+  String get ayudaPagador =>
+      'Elige quién pagó. Si salió del fondo, usa Efectivo del grupo.';
+
+  @override
+  String get ayudaIguales => 'Todos entran. Quita a quien no participó.';
+
+  @override
+  String get ayudaMontos =>
+      'Escribe lo de cada persona. La suma tiene que ser el total.';
+
+  @override
+  String get ayudaConsumo =>
+      'Agrega ítems y asígnalos. Si son varias personas, se divide igual.';
+
+  @override
+  String get agregarItem => 'Agregar ítem';
+
+  @override
+  String get nombreItem => 'Qué fue';
+
+  @override
+  String get precioItem => 'Precio';
+
+  @override
+  String get cantidadItem => 'Cantidad';
+
+  @override
+  String get propina => 'Propina %';
+
+  @override
+  String get extras => 'Extras';
+
+  @override
+  String get quitarItem => 'Quitar ítem';
+
+  @override
+  String faltan(String monto) {
+    return 'Faltan $monto';
+  }
+
+  @override
+  String sobran(String monto) {
+    return 'Sobran $monto';
+  }
+
+  @override
+  String get sumaCuadra => 'La suma coincide con el total';
+
+  @override
+  String get sumaNoCuadra => 'La suma no coincide con el total';
+
+  @override
+  String get sinItems => 'Agrega al menos un ítem con precio';
+
+  @override
+  String get itemSinPersona => 'Asigna cada ítem a alguien';
+
+  @override
+  String get itemIncompleto => 'Completa el nombre, el precio y la cantidad';
+
+  @override
+  String resumenPagasteIgual(String total, String nombres, String cuota) {
+    return 'Pagaste $total. $nombres te deben $cuota c/u';
+  }
+
+  @override
+  String resumenOtroIgual(
+    String nombre,
+    String total,
+    String nombres,
+    String cuota,
+  ) {
+    return '$nombre pagó $total. $nombres le deben $cuota c/u';
+  }
+
+  @override
+  String resumenEfectivoIgual(String cuota) {
+    return 'Sale del efectivo del grupo: $cuota c/u';
+  }
+
+  @override
+  String resumenPagasteVarios(String total, String detalle) {
+    return 'Pagaste $total. $detalle';
+  }
+
+  @override
+  String resumenOtroVarios(String nombre, String total, String detalle) {
+    return '$nombre pagó $total. $detalle';
+  }
+
+  @override
+  String resumenEfectivoVarios(String detalle) {
+    return 'Sale del efectivo del grupo: $detalle';
+  }
+
+  @override
+  String resumenSoloTu(String total) {
+    return 'Pagaste $total.';
+  }
+
+  @override
+  String resumenOtroSolo(String nombre, String total) {
+    return '$nombre pagó $total.';
+  }
+
+  @override
+  String get conjuncion => 'y';
+
+  @override
+  String get sinEventosActivos => 'No hay eventos activos';
+
+  @override
+  String get sinEventosActivosCuerpo =>
+      'Un viaje futuro o en curso aparece aquí. Los que ya terminaron están en el historial.';
+
+  @override
+  String get verHistorial => 'Ver historial';
+
+  @override
+  String totalConsumo(String monto) {
+    return 'Total $monto';
+  }
+
+  @override
+  String get propinaInvalida => 'La propina va de 0 a 100';
+
+  @override
+  String fondoSinCubrir(String monto) {
+    return 'Efectivo del grupo: $monto. No se cobra entre personas.';
+  }
+
+  @override
+  String get saldosPendientes => 'Hay saldos pendientes.';
 }

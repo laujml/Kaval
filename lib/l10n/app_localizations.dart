@@ -149,13 +149,13 @@ abstract class AppLocalizations {
   /// No description provided for @holaDeNuevo.
   ///
   /// In es, this message translates to:
-  /// **'¡Hola de nuevo! 👋'**
+  /// **'¡Hola de nuevo!'**
   String get holaDeNuevo;
 
   /// No description provided for @bienvenida.
   ///
   /// In es, this message translates to:
-  /// **'¡Bienvenida a Kaval! 👋'**
+  /// **'¡Bienvenida a Kaval!'**
   String get bienvenida;
 
   /// No description provided for @viajesSincronizados.
@@ -293,7 +293,7 @@ abstract class AppLocalizations {
   /// No description provided for @cuentaCreada.
   ///
   /// In es, this message translates to:
-  /// **'Cuenta creada ✅'**
+  /// **'Cuenta creada'**
   String get cuentaCreada;
 
   /// No description provided for @sesionIniciada.
@@ -359,7 +359,7 @@ abstract class AppLocalizations {
   /// No description provided for @efectivoCinco.
   ///
   /// In es, this message translates to:
-  /// **'Efectivo · 5 personas'**
+  /// **'Efectivo del grupo'**
   String get efectivoCinco;
 
   /// No description provided for @burbujaVoz.
@@ -377,7 +377,7 @@ abstract class AppLocalizations {
   /// No description provided for @pagoLaura.
   ///
   /// In es, this message translates to:
-  /// **'Pagó Laura · 6 personas'**
+  /// **'Entre el grupo'**
   String get pagoLaura;
 
   /// No description provided for @inicio.
@@ -407,7 +407,7 @@ abstract class AppLocalizations {
   /// No description provided for @holaNombre.
   ///
   /// In es, this message translates to:
-  /// **'Hola, {nombre} 👋'**
+  /// **'Hola, {nombre}'**
   String holaNombre(String nombre);
 
   /// No description provided for @aDonde.
@@ -491,7 +491,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipVoz.
   ///
   /// In es, this message translates to:
-  /// **'Tip: solo di “pagué 24 de gasolina”'**
+  /// **'Di el monto y el concepto. Por ejemplo: pagué 24 de gasolina.'**
   String get tipVoz;
 
   /// No description provided for @nuevoEvento.
@@ -755,7 +755,7 @@ abstract class AppLocalizations {
   /// No description provided for @conceptoEjemplo.
   ///
   /// In es, this message translates to:
-  /// **'Cena de mariscos 🦐'**
+  /// **'Cena'**
   String get conceptoEjemplo;
 
   /// No description provided for @escuchando.
@@ -791,7 +791,7 @@ abstract class AppLocalizations {
   /// No description provided for @tipDictado.
   ///
   /// In es, this message translates to:
-  /// **'Prueba: “Ana pagó 18.50 de pupusas para todos menos Carla”'**
+  /// **'Prueba: “pagué 18.50 de comida para el grupo”'**
   String get tipDictado;
 
   /// No description provided for @soloTexto.
@@ -1379,7 +1379,7 @@ abstract class AppLocalizations {
   /// No description provided for @sinEventos.
   ///
   /// In es, this message translates to:
-  /// **'Todavía no hay eventos en esta categoría'**
+  /// **'Todavía no hay eventos'**
   String get sinEventos;
 
   /// No description provided for @viajesRecientes.
@@ -1682,18 +1682,6 @@ abstract class AppLocalizations {
   /// **'Te enviamos un enlace para elegir una contraseña nueva.'**
   String get correoEnviado;
 
-  /// No description provided for @cargarTunco.
-  ///
-  /// In es, this message translates to:
-  /// **'Cargar ejemplo de Playa El Tunco'**
-  String get cargarTunco;
-
-  /// No description provided for @tuncoCargado.
-  ///
-  /// In es, this message translates to:
-  /// **'Playa El Tunco quedó cargado'**
-  String get tuncoCargado;
-
   /// No description provided for @agregarInvitado.
   ///
   /// In es, this message translates to:
@@ -1806,6 +1794,311 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No se pudo abrir el menú para compartir.'**
   String get compartirFallo;
+
+  /// No description provided for @sinEventosCuerpo.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea un viaje para empezar a anotar los gastos.'**
+  String get sinEventosCuerpo;
+
+  /// No description provided for @sinEventosFiltro.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay eventos en esta categoría'**
+  String get sinEventosFiltro;
+
+  /// No description provided for @sinGastos.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay gastos'**
+  String get sinGastos;
+
+  /// No description provided for @sinGastosCuerpo.
+  ///
+  /// In es, this message translates to:
+  /// **'Agrega el primero a mano o dictándolo.'**
+  String get sinGastosCuerpo;
+
+  /// No description provided for @sinIntegrantes.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay integrantes'**
+  String get sinIntegrantes;
+
+  /// No description provided for @sinIntegrantesCuerpo.
+  ///
+  /// In es, this message translates to:
+  /// **'Agrega a alguien por nombre o con el código de invitación.'**
+  String get sinIntegrantesCuerpo;
+
+  /// No description provided for @elegirFecha.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir fecha'**
+  String get elegirFecha;
+
+  /// No description provided for @fechasObligatorias.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige la fecha de inicio y la de fin'**
+  String get fechasObligatorias;
+
+  /// No description provided for @fechaFinAnterior.
+  ///
+  /// In es, this message translates to:
+  /// **'El fin no puede ser anterior al inicio'**
+  String get fechaFinAnterior;
+
+  /// No description provided for @copiar.
+  ///
+  /// In es, this message translates to:
+  /// **'Copiar'**
+  String get copiar;
+
+  /// No description provided for @compartir.
+  ///
+  /// In es, this message translates to:
+  /// **'Compartir'**
+  String get compartir;
+
+  /// No description provided for @ayudaCodigo.
+  ///
+  /// In es, this message translates to:
+  /// **'Agrega personas por nombre. Cuando el evento exista, también puedes invitar con el código.'**
+  String get ayudaCodigo;
+
+  /// No description provided for @nombreLocal.
+  ///
+  /// In es, this message translates to:
+  /// **'Invitado'**
+  String get nombreLocal;
+
+  /// No description provided for @partesIguales.
+  ///
+  /// In es, this message translates to:
+  /// **'Iguales'**
+  String get partesIguales;
+
+  /// No description provided for @montosExactos.
+  ///
+  /// In es, this message translates to:
+  /// **'Montos'**
+  String get montosExactos;
+
+  /// No description provided for @porConsumo.
+  ///
+  /// In es, this message translates to:
+  /// **'Ítems'**
+  String get porConsumo;
+
+  /// No description provided for @ayudaPagador.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige quién pagó. Si salió del fondo, usa Efectivo del grupo.'**
+  String get ayudaPagador;
+
+  /// No description provided for @ayudaIguales.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos entran. Quita a quien no participó.'**
+  String get ayudaIguales;
+
+  /// No description provided for @ayudaMontos.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe lo de cada persona. La suma tiene que ser el total.'**
+  String get ayudaMontos;
+
+  /// No description provided for @ayudaConsumo.
+  ///
+  /// In es, this message translates to:
+  /// **'Agrega ítems y asígnalos. Si son varias personas, se divide igual.'**
+  String get ayudaConsumo;
+
+  /// No description provided for @agregarItem.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar ítem'**
+  String get agregarItem;
+
+  /// No description provided for @nombreItem.
+  ///
+  /// In es, this message translates to:
+  /// **'Qué fue'**
+  String get nombreItem;
+
+  /// No description provided for @precioItem.
+  ///
+  /// In es, this message translates to:
+  /// **'Precio'**
+  String get precioItem;
+
+  /// No description provided for @cantidadItem.
+  ///
+  /// In es, this message translates to:
+  /// **'Cantidad'**
+  String get cantidadItem;
+
+  /// No description provided for @propina.
+  ///
+  /// In es, this message translates to:
+  /// **'Propina %'**
+  String get propina;
+
+  /// No description provided for @extras.
+  ///
+  /// In es, this message translates to:
+  /// **'Extras'**
+  String get extras;
+
+  /// No description provided for @quitarItem.
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar ítem'**
+  String get quitarItem;
+
+  /// No description provided for @faltan.
+  ///
+  /// In es, this message translates to:
+  /// **'Faltan {monto}'**
+  String faltan(String monto);
+
+  /// No description provided for @sobran.
+  ///
+  /// In es, this message translates to:
+  /// **'Sobran {monto}'**
+  String sobran(String monto);
+
+  /// No description provided for @sumaCuadra.
+  ///
+  /// In es, this message translates to:
+  /// **'La suma coincide con el total'**
+  String get sumaCuadra;
+
+  /// No description provided for @sumaNoCuadra.
+  ///
+  /// In es, this message translates to:
+  /// **'La suma no coincide con el total'**
+  String get sumaNoCuadra;
+
+  /// No description provided for @sinItems.
+  ///
+  /// In es, this message translates to:
+  /// **'Agrega al menos un ítem con precio'**
+  String get sinItems;
+
+  /// No description provided for @itemSinPersona.
+  ///
+  /// In es, this message translates to:
+  /// **'Asigna cada ítem a alguien'**
+  String get itemSinPersona;
+
+  /// No description provided for @itemIncompleto.
+  ///
+  /// In es, this message translates to:
+  /// **'Completa el nombre, el precio y la cantidad'**
+  String get itemIncompleto;
+
+  /// No description provided for @resumenPagasteIgual.
+  ///
+  /// In es, this message translates to:
+  /// **'Pagaste {total}. {nombres} te deben {cuota} c/u'**
+  String resumenPagasteIgual(String total, String nombres, String cuota);
+
+  /// No description provided for @resumenOtroIgual.
+  ///
+  /// In es, this message translates to:
+  /// **'{nombre} pagó {total}. {nombres} le deben {cuota} c/u'**
+  String resumenOtroIgual(
+    String nombre,
+    String total,
+    String nombres,
+    String cuota,
+  );
+
+  /// No description provided for @resumenEfectivoIgual.
+  ///
+  /// In es, this message translates to:
+  /// **'Sale del efectivo del grupo: {cuota} c/u'**
+  String resumenEfectivoIgual(String cuota);
+
+  /// No description provided for @resumenPagasteVarios.
+  ///
+  /// In es, this message translates to:
+  /// **'Pagaste {total}. {detalle}'**
+  String resumenPagasteVarios(String total, String detalle);
+
+  /// No description provided for @resumenOtroVarios.
+  ///
+  /// In es, this message translates to:
+  /// **'{nombre} pagó {total}. {detalle}'**
+  String resumenOtroVarios(String nombre, String total, String detalle);
+
+  /// No description provided for @resumenEfectivoVarios.
+  ///
+  /// In es, this message translates to:
+  /// **'Sale del efectivo del grupo: {detalle}'**
+  String resumenEfectivoVarios(String detalle);
+
+  /// No description provided for @resumenSoloTu.
+  ///
+  /// In es, this message translates to:
+  /// **'Pagaste {total}.'**
+  String resumenSoloTu(String total);
+
+  /// No description provided for @resumenOtroSolo.
+  ///
+  /// In es, this message translates to:
+  /// **'{nombre} pagó {total}.'**
+  String resumenOtroSolo(String nombre, String total);
+
+  /// No description provided for @conjuncion.
+  ///
+  /// In es, this message translates to:
+  /// **'y'**
+  String get conjuncion;
+
+  /// No description provided for @sinEventosActivos.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay eventos activos'**
+  String get sinEventosActivos;
+
+  /// No description provided for @sinEventosActivosCuerpo.
+  ///
+  /// In es, this message translates to:
+  /// **'Un viaje futuro o en curso aparece aquí. Los que ya terminaron están en el historial.'**
+  String get sinEventosActivosCuerpo;
+
+  /// No description provided for @verHistorial.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver historial'**
+  String get verHistorial;
+
+  /// No description provided for @totalConsumo.
+  ///
+  /// In es, this message translates to:
+  /// **'Total {monto}'**
+  String totalConsumo(String monto);
+
+  /// No description provided for @propinaInvalida.
+  ///
+  /// In es, this message translates to:
+  /// **'La propina va de 0 a 100'**
+  String get propinaInvalida;
+
+  /// No description provided for @fondoSinCubrir.
+  ///
+  /// In es, this message translates to:
+  /// **'Efectivo del grupo: {monto}. No se cobra entre personas.'**
+  String fondoSinCubrir(String monto);
+
+  /// No description provided for @saldosPendientes.
+  ///
+  /// In es, this message translates to:
+  /// **'Hay saldos pendientes.'**
+  String get saldosPendientes;
 }
 
 class _AppLocalizationsDelegate

@@ -21,7 +21,6 @@ class Evento {
     required this.aportes,
     required this.custodioId,
     this.sincronizado = true,
-    this.emoji = '',
   });
 
   final String id;
@@ -32,12 +31,11 @@ class Evento {
   final PortadaEvento portada;
   final String codigo;
   final bool sincronizado;
-  final String emoji;
   final List<Integrante> integrantes;
   final List<Gasto> gastos;
   final List<AporteEfectivo> aportes;
 
-  /// Quién lleva el efectivo encima. En el ejemplo, Ana.
+  /// Quién lleva el efectivo encima.
   final String custodioId;
 
   int get totalCentavos =>
@@ -68,7 +66,6 @@ class Evento {
       portada: portada,
       codigo: codigo ?? this.codigo,
       sincronizado: sincronizado ?? this.sincronizado,
-      emoji: emoji,
       integrantes: integrantes ?? this.integrantes,
       gastos: gastos ?? this.gastos,
       aportes: aportes ?? this.aportes,
@@ -84,7 +81,6 @@ class Evento {
       'fin': fin.millisecondsSinceEpoch,
       'portada': portada.name,
       'codigo': codigo,
-      'emoji': emoji,
       'custodioId': custodioId,
     };
   }
@@ -105,7 +101,6 @@ class Evento {
       fin: fechaDe(mapa['fin']),
       portada: enumDe(PortadaEvento.values, mapa['portada'], PortadaEvento.playa),
       codigo: textoDe(mapa['codigo']),
-      emoji: textoDe(mapa['emoji']),
       custodioId: textoDe(mapa['custodioId']),
       sincronizado: sincronizado,
       integrantes: integrantes,

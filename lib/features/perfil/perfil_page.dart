@@ -13,7 +13,6 @@ import '../../core/widgets/boton_coral.dart';
 import '../../core/widgets/campo_kaval.dart';
 import '../../core/widgets/kaval_avatar.dart';
 import '../../core/widgets/tarjeta_kaval.dart';
-import '../../data/datos_ejemplo.dart';
 import '../../data/servicio_auth.dart';
 import '../../l10n/app_localizations.dart';
 import '../../state/kaval_state.dart';
@@ -25,7 +24,9 @@ class PerfilPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final textos = AppLocalizations.of(context);
     final estado = context.watch<KavalState>();
-    final laura = estado.buscar(idTunco)?.integrante(idLaura);
+    final inicial = estado.usuario.primerNombre.trim().isEmpty
+        ? '?'
+        : estado.usuario.primerNombre.trim()[0].toUpperCase();
     final es = estado.idioma == 'es';
     final alDia = estado.eventos.every((evento) => evento.sincronizado);
 
@@ -48,7 +49,12 @@ class PerfilPage extends StatelessWidget {
             TarjetaKaval(
               child: Row(
                 children: [
-                  if (laura != null) avatarDe(laura, tamano: 64),
+                  KavalAvatar(
+                    inicial: inicial,
+                    fondo: const Color(0xFFFFD9E0),
+                    tinta: const Color(0xFFE56B8A),
+                    tamano: 64,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -57,13 +63,23 @@ class PerfilPage extends StatelessWidget {
                         Text(estado.usuario.nombre, style: KavalTexto.titulo(size: 18)),
                         Text(estado.usuario.correo, style: KavalTexto.cuerpo(size: 13)),
                         const SizedBox(height: 4),
-                        Text(
-                          alDia ? textos.sincronizado : textos.pendiente,
-                          style: KavalTexto.cuerpo(
-                            size: 12,
-                            weight: FontWeight.w800,
-                            color: alDia ? KavalColors.verde : KavalColors.marino,
-                          ),
+                        Row(
+                          children: [
+                            Icon(
+                              alDia ? Icons.cloud_done_rounded : Icons.cloud_upload_rounded,
+                              size: 14,
+                              color: alDia ? KavalColors.verde : KavalColors.marino,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              alDia ? textos.sincronizado : textos.pendiente,
+                              style: KavalTexto.cuerpo(
+                                size: 12,
+                                weight: FontWeight.w800,
+                                color: alDia ? KavalColors.verde : KavalColors.marino,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -88,10 +104,10 @@ class PerfilPage extends StatelessWidget {
                     spacing: 16,
                     runSpacing: 8,
                     children: [
-                      _Beneficio('🎙️', textos.vozNube),
-                      _Beneficio('📄', textos.exportar),
-                      _Beneficio('📊', textos.estadisticas),
-                      _Beneficio('🚫', textos.sinAnuncios),
+                      _Beneficio(Icons.mic_none, textos.vozNube),
+                      _Beneficio(Icons.description_outlined, textos.exportar),
+                      _Beneficio(Icons.bar_chart, textos.estadisticas),
+                      _Beneficio(Icons.block, textos.sinAnuncios),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -220,16 +236,22 @@ class _ModoPrueba extends StatelessWidget {
 }
 
 class _Beneficio extends StatelessWidget {
-  const _Beneficio(this.emoji, this.texto);
+  const _Beneficio(this.icono, this.texto);
 
-  final String emoji;
+  final IconData icono;
   final String texto;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 140,
-      child: Text('$emoji $texto', style: KavalTexto.cuerpo(size: 13, color: Colors.white)),
+      child: Row(
+        children: [
+          Icon(icono, size: 16, color: Colors.white),
+          const SizedBox(width: 6),
+          Expanded(child: Text(texto, style: KavalTexto.cuerpo(size: 13, color: Colors.white))),
+        ],
+      ),
     );
   }
 }

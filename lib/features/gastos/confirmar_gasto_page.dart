@@ -78,7 +78,9 @@ class ConfirmarGastoPage extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Text('✨ ${textos.detectamos}', style: KavalTexto.titulo(size: 16)),
+                            Icon(Icons.lightbulb_outline, color: KavalColors.coral, size: 18),
+                            const SizedBox(width: 6),
+                            Text(textos.detectamos, style: KavalTexto.titulo(size: 16)),
                             const Spacer(),
                             Text(textos.altaConfianza, style: KavalTexto.cuerpo(size: 12, weight: FontWeight.w800, color: KavalColors.verde)),
                           ],
@@ -88,7 +90,18 @@ class ConfirmarGastoPage extends StatelessWidget {
                         Text(usd(borrador.montoCentavos), style: KavalTexto.titulo(size: 28)),
                         const Divider(),
                         Text('${textos.concepto}: ${borrador.concepto}', style: KavalTexto.cuerpo(color: KavalColors.marino, weight: FontWeight.w800)),
-                        Text('${borrador.emoji} ${nombreCategoria(textos, borrador.categoria)}', style: KavalTexto.cuerpo(size: 12)),
+                        Row(
+                          children: [
+                            IconoCategoria(
+                              categoria: borrador.categoria,
+                              tamano: 16,
+                              color: KavalColors.coral,
+                              etiqueta: nombreCategoria(textos, borrador.categoria),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(nombreCategoria(textos, borrador.categoria), style: KavalTexto.cuerpo(size: 12)),
+                          ],
+                        ),
                         const Divider(),
                         Row(
                           children: [
@@ -101,7 +114,13 @@ class ConfirmarGastoPage extends StatelessWidget {
                         const SizedBox(height: 8),
                         Text('${textos.participantes}: ${textos.todosCantidad(borrador.participanteIds.length)}', style: KavalTexto.cuerpo(color: KavalColors.marino)),
                         const SizedBox(height: 8),
-                        Text('${textos.metodo}: 💳 ${textos.tarjeta}', style: KavalTexto.cuerpo(color: KavalColors.marino)),
+                        Row(
+                          children: [
+                            const Icon(Icons.credit_card, size: 16, color: KavalColors.marino),
+                            const SizedBox(width: 6),
+                            Text('${textos.metodo}: ${textos.tarjeta}', style: KavalTexto.cuerpo(color: KavalColors.marino)),
+                          ],
+                        ),
                       ],
                     ),
                   ),

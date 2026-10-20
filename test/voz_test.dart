@@ -47,6 +47,42 @@ void main() {
     expect(oido?.concepto, isEmpty);
   });
 
+  test('pagué, yo pagué e invité dejan al usuario y reparten entre todos', () {
+    for (final frase in ['pagué 25 dólares de pupusas', 'yo pagué 24 de gasolina', 'invité 40 de cena']) {
+      final oido = interpretarDictado(frase);
+      expect(oido?.quien, QuienPagoDictado.tu, reason: frase);
+      expect(oido?.entreTodos, isTrue, reason: frase);
+      expect(oido?.nombrePagador, isNull, reason: frase);
+    }
+    expect(interpretarDictado('I paid 25 dollars for gas')?.quien, QuienPagoDictado.tu);
+    expect(interpretarDictado('yo pagué 24 de gasolina')?.concepto, 'Gasolina');
+    expect(interpretarDictado('invité 40 de cena')?.concepto, 'Cena');
+  });
+
+  test('gastamos y del fondo usan el efectivo del grupo', () {
+    final gastamos = interpretarDictado('gastamos 10 de cafe');
+    expect(gastamos?.quien, QuienPagoDictado.fondo);
+    expect(gastamos?.entreTodos, isTrue);
+    expect(gastamos?.concepto, 'Cafe');
+    expect(gastamos?.montoCentavos, 1000);
+
+    final fondo = interpretarDictado('del fondo 15 de agua');
+    expect(fondo?.quien, QuienPagoDictado.fondo);
+    expect(fondo?.concepto, 'Agua');
+    expect(fondo?.montoCentavos, 1500);
+    expect(interpretarDictado('we spent 12 dollars on gas')?.quien, QuienPagoDictado.fondo);
+  });
+
+  test('Ana pagó asigna a Ana y no mete el nombre en el concepto', () {
+    final oido = interpretarDictado('Ana pagó 18.50 de comida');
+    expect(oido?.quien, QuienPagoDictado.nombrado);
+    expect(oido?.nombrePagador, 'Ana');
+    expect(oido?.entreTodos, isTrue);
+    expect(oido?.montoCentavos, 1850);
+    expect(oido?.concepto, 'Comida');
+    expect(interpretarDictado('Jose paid 10 dollars for gas')?.nombrePagador, 'Jose');
+  });
+
   test('el idioma elige es_SV o en_US entre los que ofrece el teléfono', () {
     const locales = ['en_US', 'es_ES', 'es_SV', 'es_MX'];
     expect(localeDeVoz(locales, 'es'), 'es_SV');

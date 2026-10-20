@@ -13,6 +13,7 @@ class EstadoVacio extends StatelessWidget {
     this.cuerpo,
     this.fondo,
     this.tinta,
+    this.accion,
   });
 
   final IconData icono;
@@ -20,6 +21,7 @@ class EstadoVacio extends StatelessWidget {
   final String? cuerpo;
   final Color? fondo;
   final Color? tinta;
+  final Widget? accion;
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +45,10 @@ class EstadoVacio extends StatelessWidget {
           if (cuerpo != null) ...[
             const SizedBox(height: KavalMedidas.xs),
             Text(cuerpo!, textAlign: TextAlign.center, style: KavalTexto.cuerpo(color: paleta.gris)),
+          ],
+          if (accion != null) ...[
+            const SizedBox(height: KavalMedidas.md),
+            accion!,
           ],
         ],
       ),

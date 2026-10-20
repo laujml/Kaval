@@ -8,7 +8,6 @@ import '../../core/widgets/ilustraciones.dart';
 import '../../core/widgets/logo_kaval.dart';
 import '../../core/widgets/tarjeta_kaval.dart';
 import '../../l10n/app_localizations.dart';
-import '../../models/evento.dart';
 
 /// Tres pasos de bienvenida. El primero copia el mockup de onboarding.
 class BienvenidaPage extends StatefulWidget {
@@ -64,22 +63,25 @@ class _BienvenidaPageState extends State<BienvenidaPage> {
                           children: [
                             TextSpan(text: textos.tituloViajen),
                             TextSpan(text: textos.claras, style: KavalTexto.titulo(size: 32, color: KavalColors.coral)),
-                            const TextSpan(text: ' ✨'),
                           ],
                         ),
                       ),
                       subtitulo: textos.subtituloBienvenida,
                     ),
                     _Paso(
-                      ilustracion: const ClipRRect(
-                        borderRadius: BorderRadius.all(Radius.circular(28)),
-                        child: IlustracionPortada(portada: PortadaEvento.volcan, alto: 220),
+                      ilustracion: ClipRRect(
+                        borderRadius: const BorderRadius.all(Radius.circular(28)),
+                        child: IlustracionVoz(semanticsLabel: textos.tituloVoz),
                       ),
                       titulo: Text(textos.tituloVoz, style: KavalTexto.titulo(size: 32)),
                       subtitulo: textos.subtituloVoz,
                     ),
                     _Paso(
-                      ilustracion: const Center(child: IlustracionMonedas()),
+                      ilustracion: IlustracionCuentas(
+                        ancho: 160,
+                        alto: 140,
+                        semanticsLabel: textos.tituloCuentas,
+                      ),
                       titulo: Text(textos.tituloCuentas, style: KavalTexto.titulo(size: 32)),
                       subtitulo: textos.subtituloCuentas,
                     ),
@@ -167,13 +169,13 @@ class _CollagePlaya extends StatelessWidget {
         height: 280,
         child: Stack(
           children: [
-            const Positioned.fill(child: CustomPaint(painter: PintorPlaya())),
+            Positioned.fill(child: IlustracionPaisaje(semanticsLabel: textos.playa)),
             Positioned(
               left: 36,
               right: 16,
               top: 18,
               child: _TarjetaFlotante(
-                emoji: '🫓',
+                icono: Icons.restaurant,
                 titulo: textos.pupusas,
                 detalle: textos.efectivoCinco,
                 monto: '\$18.50',
@@ -205,7 +207,7 @@ class _CollagePlaya extends StatelessWidget {
               right: 12,
               top: 158,
               child: _TarjetaFlotante(
-                emoji: '⛽',
+                icono: Icons.local_gas_station,
                 titulo: textos.gasolina,
                 detalle: textos.pagoLaura,
                 monto: '\$24.00',
@@ -220,13 +222,13 @@ class _CollagePlaya extends StatelessWidget {
 
 class _TarjetaFlotante extends StatelessWidget {
   const _TarjetaFlotante({
-    required this.emoji,
+    required this.icono,
     required this.titulo,
     required this.detalle,
     required this.monto,
   });
 
-  final String emoji;
+  final IconData icono;
   final String titulo;
   final String detalle;
   final String monto;
@@ -238,7 +240,7 @@ class _TarjetaFlotante extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 22)),
+          ExcludeSemantics(child: Icon(icono, color: KavalColors.coral)),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
