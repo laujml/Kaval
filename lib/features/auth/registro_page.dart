@@ -112,7 +112,10 @@ class _RegistroPageState extends State<RegistroPage> {
   }
 
   Future<void> _entrarCon(Future<Usuario?> Function() accion) async {
+    // Un segundo toque no abre otra sesión ni otro listener en paralelo.
+    if (_enviando) return;
     final textos = AppLocalizations.of(context);
+    setState(() => _enviando = true);
     try {
       final cuenta = await accion();
       if (!mounted || cuenta == null) return;
@@ -124,6 +127,8 @@ class _RegistroPageState extends State<RegistroPage> {
       final mensaje = mensajeAuth(error, textos);
       if (mensaje.isEmpty) return;
       mostrarAviso(context, mensaje);
+    } finally {
+      if (mounted) setState(() => _enviando = false);
     }
   }
 
@@ -299,6 +304,7 @@ class _RegistroPageState extends State<RegistroPage> {
             if (_crearCuenta) ...[
               EtiquetaCampo(textos.nombre),
               TextFormField(
+                key: const ValueKey('nombre'),
                 autofocus: true,
                 focusNode: _nombreFocus,
                 textCapitalization: TextCapitalization.words,
@@ -318,6 +324,7 @@ class _RegistroPageState extends State<RegistroPage> {
             ],
             EtiquetaCampo(textos.correo),
             TextFormField(
+              key: const ValueKey('correo'),
               autofocus: !_crearCuenta,
               focusNode: _correoFocus,
               keyboardType: TextInputType.emailAddress,
@@ -337,6 +344,7 @@ class _RegistroPageState extends State<RegistroPage> {
             const SizedBox(height: 14),
             EtiquetaCampo(textos.contrasena),
             TextFormField(
+              key: const ValueKey('contrasena'),
               controller: _passwordController,
               focusNode: _contrasenaFocus,
               obscureText: _ocultarContrasena,
@@ -372,6 +380,7 @@ class _RegistroPageState extends State<RegistroPage> {
               const SizedBox(height: 14),
               EtiquetaCampo(textos.confirmarContrasena),
               TextFormField(
+                key: const ValueKey('confirmacion'),
                 focusNode: _confirmacionFocus,
                 obscureText: _ocultarConfirmacion,
                 textInputAction: TextInputAction.done,

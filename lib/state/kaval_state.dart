@@ -164,7 +164,6 @@ class KavalState extends ChangeNotifier {
     notifyListeners();
     final nube = datos;
     if (nube == null) return;
-    await nube.usuarios.guardar(cuenta);
     _nube = nube.eventos.escuchar(cuenta.id).listen(
       (lista) {
         eventos = fusionarEventos(eventos, lista);
@@ -174,6 +173,10 @@ class KavalState extends ChangeNotifier {
         debugPrint('[kaval] no se pudieron leer los eventos: $error');
       },
     );
+    // Con la red de Firestore apagada esta escritura no termina; no se espera.
+    unawaited(nube.usuarios.guardar(cuenta).catchError((Object error) {
+      debugPrint('[kaval] no se pudo guardar el usuario: $error');
+    }));
   }
 
   Future<void> salir() async {

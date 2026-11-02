@@ -21,6 +21,18 @@ class ServicioAuth {
     return sesion;
   }
 
+  /// La cuenta que Firebase dejó abierta en la sesión anterior, si hay una.
+  Future<Usuario?> sesionGuardada() async {
+    final sesion = auth;
+    if (!listo || sesion == null) return null;
+    final cuenta = sesion.currentUser ??
+        await sesion.authStateChanges().first.timeout(
+              const Duration(seconds: 5),
+              onTimeout: () => null,
+            );
+    return cuenta == null ? null : _desde(cuenta);
+  }
+
   Future<Usuario> registrar({
     required String nombre,
     required String correo,
@@ -87,6 +99,10 @@ class ServicioAuth {
       await cuenta.reauthenticateWithCredential(
         GoogleAuthProvider.credential(idToken: idToken),
       );
+      return true;
+    }
+    if (_tieneProveedor('apple.com')) {
+      await cuenta.reauthenticateWithProvider(AppleAuthProvider());
       return true;
     }
     throw FirebaseAuthException(code: 'requires-recent-login');

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
@@ -13,21 +15,22 @@ import 'state/kaval_state.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final listo = await iniciarFirebase();
+  final auth = ServicioAuth(
+    auth: listo ? FirebaseAuth.instance : null,
+    listo: listo,
+  );
+  final estado = KavalState(
+    datos: listo ? RepositorioDatos(FirebaseFirestore.instance) : null,
+  );
+  // Si Firebase guardó la sesión, se entra directo con esa cuenta.
+  final cuenta = await auth.sesionGuardada();
+  if (cuenta != null) unawaited(estado.entrarEnLaNube(cuenta));
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => KavalState(
-            datos: listo ? RepositorioDatos(FirebaseFirestore.instance) : null,
-          ),
-        ),
+        ChangeNotifierProvider.value(value: estado),
         Provider(create: (_) => ClienteApi()),
-        Provider(
-          create: (_) => ServicioAuth(
-            auth: listo ? FirebaseAuth.instance : null,
-            listo: listo,
-          ),
-        ),
+        Provider.value(value: auth),
       ],
       child: const KavalApp(),
     ),
