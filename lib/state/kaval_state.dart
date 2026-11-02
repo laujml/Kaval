@@ -18,9 +18,9 @@ import '../models/usuario.dart';
 /// Estado de la materia: un ChangeNotifier que las pantallas escuchan.
 class KavalState extends ChangeNotifier {
   KavalState({this.datos})
-      : usuario = const Usuario(id: '', nombre: '', correo: ''),
-        eventos = const [],
-        borrador = KavalState.borradorVacio;
+    : usuario = const Usuario(id: '', nombre: '', correo: ''),
+      eventos = const [],
+      borrador = KavalState.borradorVacio;
 
   final RepositorioDatos? datos;
   StreamSubscription<List<Evento>>? _nube;
@@ -109,7 +109,8 @@ class KavalState extends ChangeNotifier {
   List<Evento> get eventosActivos => eventosActivosEn(eventos, DateTime.now());
 
   /// Solo los que ya pasaron su fecha de fin.
-  List<Evento> get eventosHistorial => eventosHistorialEn(eventos, DateTime.now());
+  List<Evento> get eventosHistorial =>
+      eventosHistorialEn(eventos, DateTime.now());
 
   /// Activos, y si hay filtro de portada, solo esa.
   List<Evento> get eventosFiltrados {
@@ -143,7 +144,11 @@ class KavalState extends ChangeNotifier {
 
   int get balanceGeneral => teDeben - debes;
 
-  void entrar({required String nombre, required String correo, bool local = false}) {
+  void entrar({
+    required String nombre,
+    required String correo,
+    bool local = false,
+  }) {
     _soltarNube();
     _sesionNube = false;
     usuario = Usuario(
@@ -164,19 +169,23 @@ class KavalState extends ChangeNotifier {
     notifyListeners();
     final nube = datos;
     if (nube == null) return;
-    _nube = nube.eventos.escuchar(cuenta.id).listen(
-      (lista) {
-        eventos = fusionarEventos(eventos, lista);
-        notifyListeners();
-      },
-      onError: (Object error) {
-        debugPrint('[kaval] no se pudieron leer los eventos: $error');
-      },
-    );
+    _nube = nube.eventos
+        .escuchar(cuenta.id)
+        .listen(
+          (lista) {
+            eventos = fusionarEventos(eventos, lista);
+            notifyListeners();
+          },
+          onError: (Object error) {
+            debugPrint('[kaval] no se pudieron leer los eventos: $error');
+          },
+        );
     // Con la red de Firestore apagada esta escritura no termina; no se espera.
-    unawaited(nube.usuarios.guardar(cuenta).catchError((Object error) {
-      debugPrint('[kaval] no se pudo guardar el usuario: $error');
-    }));
+    unawaited(
+      nube.usuarios.guardar(cuenta).catchError((Object error) {
+        debugPrint('[kaval] no se pudo guardar el usuario: $error');
+      }),
+    );
   }
 
   Future<void> salir() async {
@@ -216,7 +225,16 @@ class KavalState extends ChangeNotifier {
     }
     eventos = [listo, ...eventos];
     notifyListeners();
-    if (enLaNube) unawaited(datos!.eventos.guardar(listo, duenoId: usuario.id));
+    if (enLaNube) {
+      unawaited(
+        datos!.eventos.guardar(listo, duenoId: usuario.id).catchError((
+          Object error,
+        ) {
+          debugPrint('[kaval] no se pudo guardar el evento: $error');
+          return listo;
+        }),
+      );
+    }
   }
 
   void agregarIntegrante(String eventoId, Integrante persona) {

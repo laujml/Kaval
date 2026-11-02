@@ -13,28 +13,41 @@ class RepositorioEventos {
 
   final FirebaseFirestore _db;
 
-  CollectionReference<Map<String, dynamic>> get _eventos => _db.collection('eventos');
+  CollectionReference<Map<String, dynamic>> get _eventos =>
+      _db.collection('eventos');
 
-  CollectionReference<Map<String, dynamic>> get _codigos => _db.collection('codigos');
+  CollectionReference<Map<String, dynamic>> get _codigos =>
+      _db.collection('codigos');
 
   /// Ids de cuentas reales. Un invitado con solo nombre no entra aquí:
   /// no tiene uid y las reglas no deben tratarlo como integrante.
   List<String> cuentasDe(Evento evento, String duenoId) {
     final ids = <String>{duenoId};
     for (final persona in evento.integrantes) {
-      final conCuenta = persona.estado == EstadoUnion.admin || persona.estado == EstadoUnion.unido;
+      final conCuenta =
+          persona.estado == EstadoUnion.admin ||
+          persona.estado == EstadoUnion.unido;
       if (conCuenta && persona.id.length >= 20) ids.add(persona.id);
     }
     return ids.toList();
   }
 
   Future<Evento> guardar(Evento evento, {required String duenoId}) async {
-    final codigo = await _codigoLibre(evento);
-    final listo = codigo == evento.codigo ? evento : evento.copyWith(codigo: codigo);
+    final integrantes = [
+      for (final persona in evento.integrantes)
+        Integrante(
+          id: persona.id.replaceAll('/', '_'),
+          nombre: persona.nombre,
+          colorFondo: persona.colorFondo,
+          colorInicial: persona.colorInicial,
+          estado: persona.estado,
+        ),
+    ];
+    final base = evento.copyWith(integrantes: integrantes);
+    final codigo = await _codigoLibre(base);
+    final listo = codigo == base.codigo ? base : base.copyWith(codigo: codigo);
     final ref = _eventos.doc(listo.id);
-    // Primero el evento. Las reglas de códigos e integrantes hacen get()
-    // de este documento, y get() no ve las otras escrituras del mismo lote.
-    await ref.set({
+    final guardarEvento = ref.set({
       ...listo.toMap(),
       'integranteIds': cuentasDe(listo, duenoId),
       'actualizado': DateTime.now().millisecondsSinceEpoch,
@@ -49,14 +62,22 @@ class RepositorioEventos {
       });
     }
     batch.update(ref, {'actualizado': DateTime.now().millisecondsSinceEpoch});
-    await batch.commit();
+    final guardarIntegrantes = batch.commit();
+    await Future.wait([guardarEvento, guardarIntegrantes]);
     return listo;
   }
 
   Future<String> _codigoLibre(Evento evento) async {
     var codigo = evento.codigo.toUpperCase();
     for (var intento = 0; intento < 5; intento++) {
-      final ocupado = await _codigos.doc(codigo).get();
+      late final DocumentSnapshot<Map<String, dynamic>> ocupado;
+      try {
+        ocupado = await _codigos
+            .doc(codigo)
+            .get(const GetOptions(source: Source.cache));
+      } catch (_) {
+        return codigo;
+      }
       final dueno = ocupado.data()?['eventoId'];
       if (!ocupado.exists || dueno == evento.id) return codigo;
       codigo = codigoDeEvento(evento.nombre);
@@ -69,12 +90,12 @@ class RepositorioEventos {
         .where('integranteIds', arrayContains: uid)
         .snapshots(includeMetadataChanges: true)
         .asyncMap((snap) async {
-      final lista = <Evento>[];
-      for (final doc in snap.docs) {
-        lista.add(await armar(doc));
-      }
-      return lista;
-    });
+          final lista = <Evento>[];
+          for (final doc in snap.docs) {
+            lista.add(await armar(doc));
+          }
+          return lista;
+        });
   }
 
   Future<Evento?> leer(String id) async {
@@ -88,7 +109,12 @@ class RepositorioEventos {
     final eventoId = puntero.data()?['eventoId'];
     if (!puntero.exists || eventoId is! String) return null;
     final ref = _eventos.doc(eventoId);
-    await ref.update({
+    final batch = _db.batch();
+    batch.set(ref.collection('solicitudesUnion').doc(usuario.id), {
+      'codigo': codigo.trim().toUpperCase(),
+      'uid': usuario.id,
+    });
+    batch.update(ref, {
       'integranteIds': FieldValue.arrayUnion([usuario.id]),
     });
     final persona = Integrante(
@@ -98,27 +124,41 @@ class RepositorioEventos {
       colorInicial: 0xFFE56B8A,
       estado: EstadoUnion.unido,
     );
-    await ref.collection('integrantes').doc(usuario.id).set({
+    batch.set(ref.collection('integrantes').doc(usuario.id), {
       ...persona.toMap(),
       'orden': DateTime.now().millisecondsSinceEpoch,
     });
+    await batch.commit();
     return leer(eventoId);
   }
 
   Future<Evento> armar(DocumentSnapshot<Map<String, dynamic>> doc) async {
     final soloLocal = doc.metadata.hasPendingWrites;
-    final integrantes = await _hijos(doc.reference.collection('integrantes'), soloLocal: soloLocal);
-    final gastos = await _hijos(doc.reference.collection('gastos'), soloLocal: soloLocal);
-    final aportes = await _hijos(doc.reference.collection('aportes'), soloLocal: soloLocal);
+    final integrantes = await _hijos(
+      doc.reference.collection('integrantes'),
+      soloLocal: soloLocal,
+    );
+    final gastos = await _hijos(
+      doc.reference.collection('gastos'),
+      soloLocal: soloLocal,
+    );
+    final aportes = await _hijos(
+      doc.reference.collection('aportes'),
+      soloLocal: soloLocal,
+    );
     gastos.sort((a, b) => a.orden.compareTo(b.orden));
     integrantes.sort((a, b) => a.orden.compareTo(b.orden));
     aportes.sort((a, b) => a.orden.compareTo(b.orden));
     return Evento.fromMap(
       doc.id,
       doc.data() ?? {},
-      integrantes: [for (final item in integrantes) Integrante.fromMap(item.id, item.data)],
+      integrantes: [
+        for (final item in integrantes) Integrante.fromMap(item.id, item.data),
+      ],
       gastos: [for (final item in gastos) Gasto.fromMap(item.id, item.data)],
-      aportes: [for (final item in aportes) AporteEfectivo.fromMap(item.id, item.data)],
+      aportes: [
+        for (final item in aportes) AporteEfectivo.fromMap(item.id, item.data),
+      ],
       sincronizado: !doc.metadata.hasPendingWrites,
     );
   }
@@ -149,7 +189,8 @@ Future<QuerySnapshot<Map<String, dynamic>>?> _leerHijos(
   required bool soloLocal,
 }) async {
   try {
-    if (soloLocal) return await coleccion.get(const GetOptions(source: Source.cache));
+    if (soloLocal)
+      return await coleccion.get(const GetOptions(source: Source.cache));
     return await coleccion.get();
   } catch (_) {
     if (soloLocal) return null;
