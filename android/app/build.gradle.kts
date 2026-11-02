@@ -7,6 +7,16 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Solo las ABIs que Flutter compila: sin esto, --target-platform android-arm64 deja
+// libs de plugins en x86_64 sin libflutter.so y la app se cierra al abrir (BUG-014).
+val abisFlutter = (findProperty("target-platform") as String?)
+    ?.split(",")
+    ?.mapNotNull {
+        mapOf("android-arm" to "armeabi-v7a", "android-arm64" to "arm64-v8a", "android-x64" to "x86_64")[it.trim()]
+    }
+    .orEmpty()
+val dividirPorAbi = findProperty("split-per-abi")?.toString()?.toBoolean() == true
+
 android {
     namespace = "com.kaval.app.kaval"
     compileSdk = flutter.compileSdkVersion
@@ -30,6 +40,12 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        if (abisFlutter.isNotEmpty() && !dividirPorAbi) {
+            ndk {
+                abiFilters.clear()
+                abiFilters += abisFlutter
+            }
+        }
     }
 
     buildTypes {
