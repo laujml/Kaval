@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../features/auth/registro_page.dart';
 import '../features/efectivo/efectivo_page.dart';
@@ -18,11 +19,17 @@ import '../features/onboarding/bienvenida_page.dart';
 import '../features/perfil/perfil_page.dart';
 import '../features/resumen/resumen_page.dart';
 import '../features/shell/nav_shell.dart';
+import '../state/kaval_state.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/bienvenida',
   routes: [
-    GoRoute(path: '/bienvenida', builder: (context, state) => const BienvenidaPage()),
+    GoRoute(
+      path: '/bienvenida',
+      // Con la sesión de Firebase restaurada no se vuelve a la bienvenida.
+      redirect: (context, state) => context.read<KavalState>().enLaNube ? '/inicio' : null,
+      builder: (context, state) => const BienvenidaPage(),
+    ),
     GoRoute(
       path: '/auth',
       builder: (context, state) => RegistroPage(empezarEnLogin: state.uri.queryParameters['modo'] == 'login'),
