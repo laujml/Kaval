@@ -101,6 +101,10 @@ class ServicioAuth {
       );
       return true;
     }
+    if (_tieneProveedor('apple.com')) {
+      await cuenta.reauthenticateWithProvider(AppleAuthProvider());
+      return true;
+    }
     throw FirebaseAuthException(code: 'requires-recent-login');
   }
 
