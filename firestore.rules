@@ -10,13 +10,21 @@ service cloud.firestore {
         && request.auth.uid in get(/databases/$(database)/documents/eventos/$(eventoId)).data.integranteIds;
     }
 
-    // Unirse: la persona solo puede sumar su propio uid, sin tocar el resto.
-    function soloSeAgregaElMismo() {
+    function solicitudUnionValida(eventoId) {
+      let solicitud = /databases/$(database)/documents/eventos/$(eventoId)/solicitudesUnion/$(request.auth.uid);
+      return autenticado()
+        && existsAfter(solicitud)
+        && getAfter(solicitud).data.uid == request.auth.uid;
+    }
+
+    // Unirse: la persona presenta un código válido y solo suma su propio uid.
+    function soloSeAgregaElMismo(eventoId) {
       return autenticado()
         && request.auth.uid in request.resource.data.integranteIds
         && request.resource.data.integranteIds.hasAll(resource.data.integranteIds)
         && request.resource.data.integranteIds.size() == resource.data.integranteIds.size() + 1
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['integranteIds']);
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['integranteIds'])
+        && solicitudUnionValida(eventoId);
     }
 
     match /usuarios/{uid} {
@@ -25,7 +33,7 @@ service cloud.firestore {
 
     // El código se lee de uno en uno. No se puede listar la colección.
     match /codigos/{codigo} {
-      allow get: if autenticado();
+      allow get: if autenticado() && request.auth.token.email_verified == true;
       allow list: if false;
       allow create, update: if autenticado() && esIntegrante(request.resource.data.eventoId);
       allow delete: if false;
@@ -34,7 +42,7 @@ service cloud.firestore {
     match /eventos/{eventoId} {
       allow get, list: if autenticado() && request.auth.uid in resource.data.integranteIds;
       allow create: if autenticado() && request.auth.uid in request.resource.data.integranteIds;
-      allow update: if esIntegrante(eventoId) || soloSeAgregaElMismo();
+      allow update: if esIntegrante(eventoId) || soloSeAgregaElMismo(eventoId);
       allow delete: if esIntegrante(eventoId);
 
       match /integrantes/{integranteId} {
@@ -42,6 +50,16 @@ service cloud.firestore {
         allow create, update: if esIntegrante(eventoId)
           || (autenticado() && request.auth.uid == integranteId);
         allow delete: if esIntegrante(eventoId);
+      }
+
+      match /solicitudesUnion/{uid} {
+        allow create: if autenticado()
+          && request.auth.uid == uid
+          && request.resource.data.uid == uid
+          && request.resource.data.codigo is string
+          && exists(/databases/$(database)/documents/codigos/$(request.resource.data.codigo))
+          && get(/databases/$(database)/documents/codigos/$(request.resource.data.codigo)).data.eventoId == eventoId;
+        allow read, update, delete: if esIntegrante(eventoId);
       }
 
       match /gastos/{gastoId} {

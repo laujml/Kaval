@@ -3,7 +3,9 @@ import 'dart:math';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kaval/core/invitaciones/codigo_evento.dart';
+
 import 'fixtures/datos_ejemplo.dart';
+
 import 'package:kaval/data/repositorios/repositorio_datos.dart';
 import 'package:kaval/models/evento.dart';
 import 'package:kaval/models/gasto.dart';
@@ -35,7 +37,10 @@ void main() {
     final evento = await datos.eventos.leer('tunco-${cuenta.id}');
     final esperado = tuncoParaCuenta(cuenta);
     expect(evento, isNotNull);
-    expect(evento!.gastos.map((gasto) => gasto.montoCentavos), esperado.gastos.map((gasto) => gasto.montoCentavos));
+    expect(
+      evento!.gastos.map((gasto) => gasto.montoCentavos),
+      esperado.gastos.map((gasto) => gasto.montoCentavos),
+    );
     expect(evento.aportes.first.montoCentavos, 6000);
     expect(evento.sincronizado, isTrue);
     expect(evento.integrante('diego')?.estado, EstadoUnion.soloNombre);
@@ -76,37 +81,52 @@ void main() {
     expect(guardado.codigo, startsWith('TUNCO-'));
   });
 
-  test('la escucha marca sincronizado cuando la escritura ya se confirmó', () async {
-    final datos = RepositorioDatos(FakeFirebaseFirestore());
-    await guardarTunco(datos, cuenta);
-    final lista = await datos.eventos.escuchar(cuenta.id).first;
-    expect(lista.single.sincronizado, isTrue);
-    expect(lista.single.nombre, 'Playa El Tunco');
-  });
+  test(
+    'la escucha marca sincronizado cuando la escritura ya se confirmó',
+    () async {
+      final datos = RepositorioDatos(FakeFirebaseFirestore());
+      await guardarTunco(datos, cuenta);
+      final lista = await datos.eventos.escuchar(cuenta.id).first;
+      expect(lista.single.sincronizado, isTrue);
+      expect(lista.single.nombre, 'Playa El Tunco');
+    },
+  );
 
-  test('un gasto en la nube queda pendiente hasta que Firestore lo confirma', () async {
-    final db = FakeFirebaseFirestore();
-    final datos = RepositorioDatos(db);
-    await guardarTunco(datos, cuenta);
-    final estado = KavalState(datos: datos);
-    addTearDown(estado.dispose);
-    await estado.entrarEnLaNube(cuenta);
-    final id = 'tunco-${cuenta.id}';
-    await _cuando(() => estado.buscar(id)?.sincronizado == true);
+  test(
+    'un gasto en la nube queda pendiente hasta que Firestore lo confirma',
+    () async {
+      final db = FakeFirebaseFirestore();
+      final datos = RepositorioDatos(db);
+      await guardarTunco(datos, cuenta);
+      final estado = KavalState(datos: datos);
+      addTearDown(estado.dispose);
+      await estado.entrarEnLaNube(cuenta);
+      final id = 'tunco-${cuenta.id}';
+      await _cuando(() => estado.buscar(id)?.sincronizado == true);
 
-    estado.agregarGasto(id, _taxi());
-    expect(estado.buscar(id)!.sincronizado, isFalse);
-    expect(estado.buscar(id)!.gastos.first.montoCentavos, 3600);
+      estado.agregarGasto(id, _taxi());
+      expect(estado.buscar(id)!.sincronizado, isFalse);
+      expect(estado.buscar(id)!.gastos.first.montoCentavos, 3600);
 
-    await _cuando(() => estado.buscar(id)?.sincronizado == true);
-    final guardado = await db.collection('eventos').doc(id).collection('gastos').doc('taxi-avion').get();
-    expect(guardado.data()?['montoCentavos'], 3600);
-  });
+      await _cuando(() => estado.buscar(id)?.sincronizado == true);
+      final guardado = await db
+          .collection('eventos')
+          .doc(id)
+          .collection('gastos')
+          .doc('taxi-avion')
+          .get();
+      expect(guardado.data()?['montoCentavos'], 3600);
+    },
+  );
 
   test('en el perfil local un gasto no queda pendiente', () {
     final estado = KavalState();
     addTearDown(estado.dispose);
-    estado.entrar(nombre: 'Laura Angel', correo: 'laura.angel@email.com', local: true);
+    estado.entrar(
+      nombre: 'Laura Angel',
+      correo: 'laura.angel@email.com',
+      local: true,
+    );
     expect(estado.eventos, isEmpty);
     estado.crearEvento(_salidaLocal());
     estado.agregarGasto('salida-local', _taxi());

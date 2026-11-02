@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -38,8 +40,20 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
   DateTime? _inicio;
   DateTime? _fin;
 
-  static const _fondos = [0xFFD5F5E8, 0xFFD9ECFF, 0xFFE8D9FF, 0xFFFFE8C2, 0xFFFFE0D6];
-  static const _tintas = [0xFF1FA971, 0xFF3A7BD5, 0xFF8B5CF6, 0xFFE0A100, 0xFFE07A5F];
+  static const _fondos = [
+    0xFFD5F5E8,
+    0xFFD9ECFF,
+    0xFFE8D9FF,
+    0xFFFFE8C2,
+    0xFFFFE0D6,
+  ];
+  static const _tintas = [
+    0xFF1FA971,
+    0xFF3A7BD5,
+    0xFF8B5CF6,
+    0xFFE0A100,
+    0xFFE07A5F,
+  ];
 
   @override
   void didChangeDependencies() {
@@ -47,7 +61,9 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
     if (_personasListas) return;
     final textos = AppLocalizations.of(context);
     final usuario = context.read<KavalState>().usuario;
-    final nombre = usuario.nombre.trim().isEmpty ? textos.tu : usuario.primerNombre;
+    final nombre = usuario.nombre.trim().isEmpty
+        ? textos.tu
+        : usuario.primerNombre;
     _personas = [
       Integrante(
         id: usuario.id.isEmpty ? 'local' : usuario.id,
@@ -79,7 +95,7 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
       final indice = _personas.length % _fondos.length;
       _personas.add(
         Integrante(
-          id: '${nombre.toLowerCase()}-${DateTime.now().millisecondsSinceEpoch}',
+          id: '${nombre.toLowerCase().replaceAll('/', '_')}-${DateTime.now().millisecondsSinceEpoch}',
           nombre: nombre,
           colorFondo: _fondos[indice],
           colorInicial: _tintas[indice],
@@ -129,7 +145,9 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
     }
     formulario.save();
     final estado = context.read<KavalState>();
-    final id = 'evento-${DateTime.now().millisecondsSinceEpoch}';
+    final aleatorio = Random.secure();
+    final id =
+        'evento-${List.generate(16, (_) => aleatorio.nextInt(256).toRadixString(16).padLeft(2, '0')).join()}';
     final evento = Evento(
       id: id,
       nombre: _nombre.text.trim(),
@@ -164,9 +182,16 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
               child: Row(
                 children: [
-                  BotonRedondo(icono: Icons.chevron_left, onTap: () => volver(context)),
+                  BotonRedondo(
+                    icono: Icons.chevron_left,
+                    onTap: () => volver(context),
+                  ),
                   Expanded(
-                    child: Text(textos.nuevoEvento, textAlign: TextAlign.center, style: KavalTexto.titulo(size: 18)),
+                    child: Text(
+                      textos.nuevoEvento,
+                      textAlign: TextAlign.center,
+                      style: KavalTexto.titulo(size: 18),
+                    ),
                   ),
                   const SizedBox(width: 42),
                 ],
@@ -184,11 +209,16 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                       controller: _nombre,
                       focusNode: _nombreFocus,
                       textInputAction: TextInputAction.next,
-                      onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(_integranteFocus),
-                      style: KavalTexto.cuerpo(color: KavalColors.marino, weight: FontWeight.w800),
+                      onFieldSubmitted: (_) =>
+                          FocusScope.of(context).requestFocus(_integranteFocus),
+                      style: KavalTexto.cuerpo(
+                        color: KavalColors.marino,
+                        weight: FontWeight.w800,
+                      ),
                       decoration: decoracionCampo(context),
                       validator: (valor) {
-                        if ((valor?.trim() ?? '').isEmpty) return textos.nombreEventoObligatorio;
+                        if ((valor?.trim() ?? '').isEmpty)
+                          return textos.nombreEventoObligatorio;
                         return null;
                       },
                     ),
@@ -204,21 +234,31 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                                 children: [
                                   Container(
                                     height: 64,
-                                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(16),
                                       border: Border.all(
-                                        color: _portada == portada ? KavalColors.coral : Colors.transparent,
+                                        color: _portada == portada
+                                            ? KavalColors.coral
+                                            : Colors.transparent,
                                         width: 2,
                                       ),
                                     ),
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(14),
-                                      child: IlustracionPortada(portada: portada, alto: 64),
+                                      child: IlustracionPortada(
+                                        portada: portada,
+                                        alto: 64,
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 4),
-                                  Text(_nombrePortada(textos, portada), style: KavalTexto.cuerpo(size: 11)),
+                                  Text(
+                                    _nombrePortada(textos, portada),
+                                    style: KavalTexto.cuerpo(size: 11),
+                                  ),
                                 ],
                               ),
                             ),
@@ -229,39 +269,75 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        Expanded(child: _fecha(textos.inicioFecha, _inicio, idioma, true)),
+                        Expanded(
+                          child: _fecha(
+                            textos.inicioFecha,
+                            _inicio,
+                            idioma,
+                            true,
+                          ),
+                        ),
                         const SizedBox(width: 12),
-                        Expanded(child: _fecha(textos.finFecha, _fin, idioma, false)),
+                        Expanded(
+                          child: _fecha(textos.finFecha, _fin, idioma, false),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 14),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: KavalColors.menta,
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.attach_money, color: KavalColors.verde),
+                          const Icon(
+                            Icons.attach_money,
+                            color: KavalColors.verde,
+                          ),
                           const SizedBox(width: 6),
-                          Expanded(child: Text(textos.monedaFija, style: KavalTexto.cuerpo(color: KavalColors.marino, weight: FontWeight.w800))),
-                          Text(textos.fija, style: KavalTexto.cuerpo(weight: FontWeight.w800, color: KavalColors.verde)),
+                          Expanded(
+                            child: Text(
+                              textos.monedaFija,
+                              style: KavalTexto.cuerpo(
+                                color: KavalColors.marino,
+                                weight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            textos.fija,
+                            style: KavalTexto.cuerpo(
+                              weight: FontWeight.w800,
+                              color: KavalColors.verde,
+                            ),
+                          ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        Text(textos.integrantesCount(_personas.length), style: KavalTexto.titulo(size: 16)),
+                        Text(
+                          textos.integrantesCount(_personas.length),
+                          style: KavalTexto.titulo(size: 16),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text(textos.ayudaCodigo, style: KavalTexto.cuerpo(size: 13)),
+                    Text(
+                      textos.ayudaCodigo,
+                      style: KavalTexto.cuerpo(size: 13),
+                    ),
                     const SizedBox(height: 8),
                     FormField<int>(
                       initialValue: _personas.length,
-                      validator: (_) => _personas.isEmpty ? textos.faltaIntegrante : null,
+                      validator: (_) =>
+                          _personas.isEmpty ? textos.faltaIntegrante : null,
                       builder: (campo) {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,14 +350,24 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                                   InputChip(
                                     avatar: avatarDe(persona, tamano: 24),
                                     label: Text(
-                                      persona.id == estado.usuario.id ? '${persona.nombre} · ${textos.tu}' : persona.nombre,
-                                      style: KavalTexto.cuerpo(size: 13, color: KavalColors.marino, weight: FontWeight.w800),
+                                      persona.id == estado.usuario.id
+                                          ? '${persona.nombre} · ${textos.tu}'
+                                          : persona.nombre,
+                                      style: KavalTexto.cuerpo(
+                                        size: 13,
+                                        color: KavalColors.marino,
+                                        weight: FontWeight.w800,
+                                      ),
                                     ),
                                     onDeleted: persona.id == estado.usuario.id
                                         ? null
-                                        : () => setState(() => _personas.remove(persona)),
+                                        : () => setState(
+                                            () => _personas.remove(persona),
+                                          ),
                                     backgroundColor: Colors.white,
-                                    side: const BorderSide(color: KavalColors.borde),
+                                    side: const BorderSide(
+                                      color: KavalColors.borde,
+                                    ),
                                   ),
                               ],
                             ),
@@ -296,8 +382,17 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                               ),
                             if (campo.errorText != null)
                               Padding(
-                                padding: const EdgeInsets.only(top: 6, left: 12),
-                                child: Text(campo.errorText!, style: KavalTexto.cuerpo(size: 12, color: KavalColors.rojo)),
+                                padding: const EdgeInsets.only(
+                                  top: 6,
+                                  left: 12,
+                                ),
+                                child: Text(
+                                  campo.errorText!,
+                                  style: KavalTexto.cuerpo(
+                                    size: 12,
+                                    color: KavalColors.rojo,
+                                  ),
+                                ),
                               ),
                           ],
                         );
@@ -376,22 +471,37 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
                 onTap: () => _elegirFecha(inicio: inicio),
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 14,
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: campo.hasError ? KavalColors.rojo : KavalColors.borde),
+                    border: Border.all(
+                      color: campo.hasError
+                          ? KavalColors.rojo
+                          : KavalColors.borde,
+                    ),
                   ),
                   child: Row(
                     children: [
                       const ExcludeSemantics(
-                        child: Icon(Icons.calendar_today_outlined, size: 16, color: KavalColors.coral),
+                        child: Icon(
+                          Icons.calendar_today_outlined,
+                          size: 16,
+                          color: KavalColors.coral,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          fecha == null ? AppLocalizations.of(context).elegirFecha : fechaConAnio(fecha, idioma),
+                          fecha == null
+                              ? AppLocalizations.of(context).elegirFecha
+                              : fechaConAnio(fecha, idioma),
                           style: KavalTexto.cuerpo(
-                            color: fecha == null ? KavalColors.gris : KavalColors.marino,
+                            color: fecha == null
+                                ? KavalColors.gris
+                                : KavalColors.marino,
                             weight: FontWeight.w800,
                           ),
                         ),
@@ -404,7 +514,10 @@ class _CrearEventoPageState extends State<CrearEventoPage> {
             if (campo.errorText != null)
               Padding(
                 padding: const EdgeInsets.only(top: 6, left: 12),
-                child: Text(campo.errorText!, style: KavalTexto.cuerpo(size: 12, color: KavalColors.rojo)),
+                child: Text(
+                  campo.errorText!,
+                  style: KavalTexto.cuerpo(size: 12, color: KavalColors.rojo),
+                ),
               ),
           ],
         );
