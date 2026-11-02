@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/liquidacion/liquidacion.dart';
 import '../../core/theme/kaval_colors.dart';
 import '../../core/theme/kaval_texto.dart';
 import '../../core/utils/dinero.dart';
@@ -33,8 +32,7 @@ class DetalleEventoPage extends StatelessWidget {
     if (evento == null) {
       return Scaffold(body: Center(child: Text(textos.sinEventos)));
     }
-    final cuentas = calcularSaldos(evento);
-    final resultado = cuentas.copyWith(transferencias: liquidar(cuentas.saldos));
+    final resultado = estado.liquidacionDe(eventoId)!;
     final saldo = resultado.saldoDe(estado.usuario.id);
     return Scaffold(
       backgroundColor: KavalColors.crema,

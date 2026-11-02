@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/liquidacion/liquidacion.dart';
 import '../../core/theme/kaval_colors.dart';
 import '../../core/theme/kaval_texto.dart';
 import '../../core/utils/dinero.dart';
@@ -29,7 +28,7 @@ class EfectivoPage extends StatelessWidget {
     final estado = context.watch<KavalState>();
     final evento = estado.buscar(eventoId);
     if (evento == null) return Scaffold(body: Center(child: Text(textos.sinEventos)));
-    final resultado = calcularLiquidacion(evento);
+    final resultado = estado.liquidacionDe(eventoId)!;
     final custodio = evento.integrante(evento.custodioId);
     final porcentaje = resultado.reunido == 0 ? 0 : ((resultado.sobrante * 100) / resultado.reunido).round();
     final enEfectivo = evento.gastos.where((g) => g.esEfectivoGrupo).toList();

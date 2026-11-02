@@ -99,10 +99,17 @@ class KavalState extends ChangeNotifier {
     return null;
   }
 
+  /// Una liquidación por versión del evento: cada cambio crea un Evento nuevo.
+  final Expando<ResultadoLiquidacion> _liquidaciones = Expando();
+
+  ResultadoLiquidacion _liquidacion(Evento evento) {
+    return _liquidaciones[evento] ??= calcularLiquidacion(evento);
+  }
+
   ResultadoLiquidacion? liquidacionDe(String id) {
     final evento = buscar(id);
     if (evento == null) return null;
-    return calcularLiquidacion(evento);
+    return _liquidacion(evento);
   }
 
   /// Viajes que todavía no terminan: futuros o en curso.
@@ -119,7 +126,7 @@ class KavalState extends ChangeNotifier {
     return base.where((evento) => evento.portada == portada).toList();
   }
 
-  int saldoEn(Evento evento) => calcularLiquidacion(evento).saldoDe(usuario.id);
+  int saldoEn(Evento evento) => _liquidacion(evento).saldoDe(usuario.id);
 
   /// Suma de saldos a favor, en todos los viajes.
   int get teDeben {
