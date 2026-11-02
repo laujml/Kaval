@@ -112,7 +112,10 @@ class _RegistroPageState extends State<RegistroPage> {
   }
 
   Future<void> _entrarCon(Future<Usuario?> Function() accion) async {
+    // Un segundo toque no abre otra sesión ni otro listener en paralelo.
+    if (_enviando) return;
     final textos = AppLocalizations.of(context);
+    setState(() => _enviando = true);
     try {
       final cuenta = await accion();
       if (!mounted || cuenta == null) return;
@@ -124,6 +127,8 @@ class _RegistroPageState extends State<RegistroPage> {
       final mensaje = mensajeAuth(error, textos);
       if (mensaje.isEmpty) return;
       mostrarAviso(context, mensaje);
+    } finally {
+      if (mounted) setState(() => _enviando = false);
     }
   }
 

@@ -7,6 +7,8 @@ import 'package:kaval/l10n/app_localizations.dart';
 import 'package:kaval/state/kaval_state.dart';
 import 'package:provider/provider.dart';
 
+import 'fixtures/auth_falsa.dart';
+
 Widget registro(ServicioAuth auth, {bool login = false}) {
   return MultiProvider(
     providers: [
@@ -65,5 +67,29 @@ void main() {
     }
     expect(visibles[2].obscureText, isTrue);
     expect(visibles[3].obscureText, isTrue);
+  });
+
+  // BUG-015 (SYNC-015): un segundo toque en Google mientras el primero
+  // sigue en curso no abre otro inicio de sesión.
+  testWidgets('tocar Google dos veces solo inicia un acceso', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    addTearDown(tester.view.reset);
+    final auth = ServicioAuthFalso();
+    await tester.pumpWidget(registro(auth, login: true));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Google'));
+    await tester.pump();
+    await tester.tap(find.text('Google'));
+    await tester.pump();
+
+    expect(auth.llamadasGoogle, 1);
+
+    // Si la persona cancela Google, el botón vuelve a funcionar.
+    auth.google.complete(null);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Google'));
+    await tester.pump();
+    expect(auth.llamadasGoogle, 2);
   });
 }
