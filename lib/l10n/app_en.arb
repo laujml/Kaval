@@ -389,5 +389,9 @@
   "descripcionAporte": "Description (optional)",
   "descripcionAporteHint": "E.g. ATM withdrawal",
   "guardarAporte": "Save contribution",
-  "aporteGuardado": "Contribution saved"
+  "aporteGuardado": "Contribution saved",
+  "eliminarGasto": "Delete expense",
+  "eliminarGastoPregunta": "Delete “{concepto}”? Balances are recalculated and this cannot be undone.",
+  "@eliminarGastoPregunta": {"placeholders": {"concepto": {"type": "String"}}},
+  "gastoEliminado": "Expense deleted"
 }

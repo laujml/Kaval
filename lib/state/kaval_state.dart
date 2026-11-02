@@ -256,6 +256,19 @@ class KavalState extends ChangeNotifier {
     if (enLaNube) unawaited(datos!.gastos.guardar(eventoId, gasto));
   }
 
+  /// Quita el gasto; la liquidación se recalcula porque el evento cambia.
+  void eliminarGasto(String eventoId, String gastoId) {
+    final evento = buscar(eventoId);
+    if (evento == null || !evento.gastos.any((gasto) => gasto.id == gastoId)) return;
+    _reemplazar(eventoId, (evento) {
+      return evento.copyWith(
+        gastos: [for (final gasto in evento.gastos) if (gasto.id != gastoId) gasto],
+        sincronizado: !enLaNube,
+      );
+    });
+    if (enLaNube) unawaited(datos!.gastos.borrar(eventoId, gastoId));
+  }
+
   void agregarAporte(String eventoId, AporteEfectivo aporte) {
     _reemplazar(eventoId, (evento) {
       return evento.copyWith(

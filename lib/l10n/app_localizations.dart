@@ -2129,6 +2129,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Aporte guardado'**
   String get aporteGuardado;
+
+  /// No description provided for @eliminarGasto.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar gasto'**
+  String get eliminarGasto;
+
+  /// No description provided for @eliminarGastoPregunta.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar «{concepto}»? Los saldos se recalculan y no se puede deshacer.'**
+  String eliminarGastoPregunta(String concepto);
+
+  /// No description provided for @gastoEliminado.
+  ///
+  /// In es, this message translates to:
+  /// **'Gasto eliminado'**
+  String get gastoEliminado;
 }
 
 class _AppLocalizationsDelegate

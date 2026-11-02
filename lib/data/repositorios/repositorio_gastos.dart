@@ -19,6 +19,15 @@ class RepositorioGastos {
     return batch.commit();
   }
 
+  /// Borra el gasto y marca el evento como actualizado, igual que [guardar].
+  Future<void> borrar(String eventoId, String gastoId) {
+    final evento = _db.collection('eventos').doc(eventoId);
+    final batch = _db.batch();
+    batch.delete(evento.collection('gastos').doc(gastoId));
+    batch.update(evento, {'actualizado': DateTime.now().millisecondsSinceEpoch});
+    return batch.commit();
+  }
+
   Future<List<Gasto>> listar(String eventoId) async {
     final docs = await _db.collection('eventos').doc(eventoId).collection('gastos').get();
     final ordenados = docs.docs.toList()

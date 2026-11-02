@@ -1161,4 +1161,15 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get aporteGuardado => 'Aporte guardado';
+
+  @override
+  String get eliminarGasto => 'Eliminar gasto';
+
+  @override
+  String eliminarGastoPregunta(String concepto) {
+    return '¿Eliminar «$concepto»? Los saldos se recalculan y no se puede deshacer.';
+  }
+
+  @override
+  String get gastoEliminado => 'Gasto eliminado';
 }

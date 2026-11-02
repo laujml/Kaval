@@ -418,5 +418,9 @@
   "descripcionAporte": "Descripción (opcional)",
   "descripcionAporteHint": "Ej. retiro del cajero",
   "guardarAporte": "Guardar aporte",
-  "aporteGuardado": "Aporte guardado"
+  "aporteGuardado": "Aporte guardado",
+  "eliminarGasto": "Eliminar gasto",
+  "eliminarGastoPregunta": "¿Eliminar «{concepto}»? Los saldos se recalculan y no se puede deshacer.",
+  "@eliminarGastoPregunta": {"placeholders": {"concepto": {"type": "String"}}},
+  "gastoEliminado": "Gasto eliminado"
 }

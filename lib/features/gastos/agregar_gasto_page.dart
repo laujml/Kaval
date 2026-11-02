@@ -281,6 +281,32 @@ class _AgregarGastoPageState extends State<AgregarGastoPage> {
     volver(context);
   }
 
+  Future<void> _eliminar(BuildContext context) async {
+    final textos = AppLocalizations.of(context);
+    final estado = context.read<KavalState>();
+    final gastoId = widget.gastoId;
+    if (gastoId == null) return;
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(textos.eliminarGasto),
+        content: Text(textos.eliminarGastoPregunta(_concepto.text.trim())),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: Text(textos.cancelar)),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: TextButton.styleFrom(foregroundColor: KavalColors.rojo),
+            child: Text(textos.eliminar),
+          ),
+        ],
+      ),
+    );
+    if (confirmar != true || !context.mounted) return;
+    estado.eliminarGasto(widget.eventoId, gastoId);
+    mostrarAviso(context, textos.gastoEliminado);
+    volver(context);
+  }
+
   void _alFallar(DioException error, AppLocalizations textos, KavalState estado, Gasto gasto) {
     switch (clasificar(error)) {
       case TipoFallo.espera:
@@ -517,6 +543,16 @@ class _AgregarGastoPageState extends State<AgregarGastoPage> {
                     ),
                     const SizedBox(height: KavalMedidas.sm),
                     TarjetaResumen(texto: resumen),
+                    if (_editando) ...[
+                      const SizedBox(height: KavalMedidas.sm),
+                      TextButton.icon(
+                        key: const ValueKey('gasto-eliminar'),
+                        onPressed: _enviando ? null : () => _eliminar(context),
+                        style: TextButton.styleFrom(foregroundColor: KavalColors.rojo),
+                        icon: const Icon(Icons.delete_outline),
+                        label: Text(textos.eliminarGasto),
+                      ),
+                    ],
                   ],
                 ),
               ),
