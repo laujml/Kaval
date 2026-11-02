@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/kaval_colors.dart';
+import '../theme/kaval_paleta.dart';
 import '../theme/kaval_texto.dart';
 
 /// Inicio, Eventos, micrófono central, Historial y Perfil.
@@ -27,6 +28,8 @@ class BarraInferiorKaval extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Sigue el tema: blanca en claro, superficie oscura en oscuro.
+    final paleta = KavalPaleta.de(context);
     return SizedBox(
       height: 86,
       child: Stack(
@@ -34,24 +37,24 @@ class BarraInferiorKaval extends StatelessWidget {
         children: [
           Container(
             height: 68,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            decoration: BoxDecoration(
+              color: paleta.superficie,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
               boxShadow: [
                 BoxShadow(
-                  color: KavalColors.sombra,
+                  color: paleta.sombra,
                   blurRadius: 18,
-                  offset: Offset(0, -4),
+                  offset: const Offset(0, -4),
                 ),
               ],
             ),
             child: Row(
               children: [
-                _item(0, Icons.home_rounded, inicio),
-                _item(1, Icons.luggage_rounded, eventos),
+                _item(paleta, 0, Icons.home_rounded, inicio),
+                _item(paleta, 1, Icons.luggage_rounded, eventos),
                 const SizedBox(width: 64),
-                _item(3, Icons.schedule_rounded, historial),
-                _item(4, Icons.person_rounded, perfil),
+                _item(paleta, 3, Icons.schedule_rounded, historial),
+                _item(paleta, 4, Icons.person_rounded, perfil),
               ],
             ),
           ),
@@ -64,9 +67,9 @@ class BarraInferiorKaval extends StatelessWidget {
     );
   }
 
-  Widget _item(int valor, IconData icono, String texto) {
+  Widget _item(KavalPaleta paleta, int valor, IconData icono, String texto) {
     final activo = indice == valor;
-    final color = activo ? KavalColors.coral : KavalColors.gris;
+    final color = activo ? paleta.coral : paleta.gris;
     return Expanded(
       child: InkWell(
         onTap: () => onTap(valor),

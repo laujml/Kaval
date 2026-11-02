@@ -9,6 +9,7 @@ import '../../core/theme/kaval_colors.dart';
 import '../../core/theme/kaval_medidas.dart';
 import '../../core/theme/kaval_paleta.dart';
 import '../../core/theme/kaval_texto.dart';
+import '../../core/theme/kaval_theme.dart';
 import '../../core/utils/dinero.dart';
 import '../../core/utils/etiquetas.dart';
 import '../../core/widgets/aviso.dart';
@@ -346,8 +347,11 @@ class _AgregarGastoPageState extends State<AgregarGastoPage> {
     );
   }
 
+  // Pantalla de colores claros fijos.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => TemaClaro(child: Builder(builder: _pantalla));
+
+  Widget _pantalla(BuildContext context) {
     final textos = AppLocalizations.of(context);
     final paleta = KavalPaleta.de(context);
     final estado = context.watch<KavalState>();
