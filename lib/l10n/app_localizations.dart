@@ -2099,6 +2099,36 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Hay saldos pendientes.'**
   String get saldosPendientes;
+
+  /// No description provided for @nuevoAporte.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo aporte'**
+  String get nuevoAporte;
+
+  /// No description provided for @descripcionAporte.
+  ///
+  /// In es, this message translates to:
+  /// **'Descripción (opcional)'**
+  String get descripcionAporte;
+
+  /// No description provided for @descripcionAporteHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ej. retiro del cajero'**
+  String get descripcionAporteHint;
+
+  /// No description provided for @guardarAporte.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar aporte'**
+  String get guardarAporte;
+
+  /// No description provided for @aporteGuardado.
+  ///
+  /// In es, this message translates to:
+  /// **'Aporte guardado'**
+  String get aporteGuardado;
 }
 
 class _AppLocalizationsDelegate

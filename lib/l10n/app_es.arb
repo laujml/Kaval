@@ -413,5 +413,10 @@
   "propinaInvalida": "La propina va de 0 a 100",
   "fondoSinCubrir": "Efectivo del grupo: {monto}. No se cobra entre personas.",
   "@fondoSinCubrir": {"placeholders": {"monto": {"type": "String"}}},
-  "saldosPendientes": "Hay saldos pendientes."
+  "saldosPendientes": "Hay saldos pendientes.",
+  "nuevoAporte": "Nuevo aporte",
+  "descripcionAporte": "Descripción (opcional)",
+  "descripcionAporteHint": "Ej. retiro del cajero",
+  "guardarAporte": "Guardar aporte",
+  "aporteGuardado": "Aporte guardado"
 }
