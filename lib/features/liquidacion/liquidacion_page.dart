@@ -32,8 +32,7 @@ class LiquidacionPage extends StatelessWidget {
     final estado = context.watch<KavalState>();
     final evento = estado.buscar(eventoId);
     if (evento == null) return Scaffold(body: Center(child: Text(textos.sinEventos)));
-    final cuentas = calcularSaldos(evento);
-    final resultado = cuentas.copyWith(transferencias: liquidar(cuentas.saldos));
+    final resultado = estado.liquidacionDe(eventoId)!;
     final enCero = saldosEnCero(resultado.saldos);
     final devoluciones = resultado.devolucion.entries.where((e) => e.value > 0).map((e) {
       final nombre = evento.integrante(e.key)?.nombre ?? e.key;

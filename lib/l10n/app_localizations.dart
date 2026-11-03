@@ -2099,6 +2099,54 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Hay saldos pendientes.'**
   String get saldosPendientes;
+
+  /// No description provided for @nuevoAporte.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo aporte'**
+  String get nuevoAporte;
+
+  /// No description provided for @descripcionAporte.
+  ///
+  /// In es, this message translates to:
+  /// **'Descripción (opcional)'**
+  String get descripcionAporte;
+
+  /// No description provided for @descripcionAporteHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ej. retiro del cajero'**
+  String get descripcionAporteHint;
+
+  /// No description provided for @guardarAporte.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar aporte'**
+  String get guardarAporte;
+
+  /// No description provided for @aporteGuardado.
+  ///
+  /// In es, this message translates to:
+  /// **'Aporte guardado'**
+  String get aporteGuardado;
+
+  /// No description provided for @eliminarGasto.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar gasto'**
+  String get eliminarGasto;
+
+  /// No description provided for @eliminarGastoPregunta.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eliminar «{concepto}»? Los saldos se recalculan y no se puede deshacer.'**
+  String eliminarGastoPregunta(String concepto);
+
+  /// No description provided for @gastoEliminado.
+  ///
+  /// In es, this message translates to:
+  /// **'Gasto eliminado'**
+  String get gastoEliminado;
 }
 
 class _AppLocalizationsDelegate

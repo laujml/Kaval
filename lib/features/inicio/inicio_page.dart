@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme/kaval_colors.dart';
 import '../../core/theme/kaval_texto.dart';
+import '../../core/theme/kaval_theme.dart';
 import '../../core/utils/dinero.dart';
 import '../../core/utils/etiquetas.dart';
 import '../../core/widgets/aviso.dart';
@@ -20,8 +21,11 @@ import '../eventos/tarjeta_evento.dart';
 class InicioPage extends StatelessWidget {
   const InicioPage({super.key});
 
+  // Pantalla de colores claros fijos.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => TemaClaro(child: Builder(builder: _pantalla));
+
+  Widget _pantalla(BuildContext context) {
     final textos = AppLocalizations.of(context);
     final estado = context.watch<KavalState>();
     final eventos = estado.eventosFiltrados;

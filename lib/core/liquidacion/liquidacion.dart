@@ -315,12 +315,16 @@ List<Transferencia> _pagosPosibles(Map<String, int> saldos) {
   return _ordenarParaMostrar(pagos);
 }
 
+/// Hasta 8 saldos se prueban todas las combinaciones (peor caso ~30 ms; con 10 ya son ~2 s).
+const _limiteBusquedaExacta = 8;
+
+/// Hasta 16 saldos se buscan subgrupos de suma cero; con más, se reparte de mayor a mayor.
+const _limiteSubgrupos = 16;
+
 /// Arma la lista más corta de pagos que deja todos los saldos en cero.
 ///
-/// Con grupos de viaje el número de personas es pequeño, así que se prueban
-/// las combinaciones. Si hay varias listas igual de cortas, se queda la que
-/// hace que el pago más chico lo haga el deudor que va primero en el alfabeto.
-/// Así el resultado no cambia entre corridas.
+/// Con pocas personas se prueban las combinaciones y se desempata por el deudor del pago más chico.
+/// Con más de [_limiteBusquedaExacta] saldos se usa [_minimaPorSubgrupos] (mismo número de pagos).
 List<Transferencia> deudaMinima(Map<String, int> saldos) {
   final deudores = <String, int>{};
   final acreedores = <String, int>{};
@@ -332,6 +336,9 @@ List<Transferencia> deudaMinima(Map<String, int> saldos) {
     }
   }
   if (deudores.isEmpty || acreedores.isEmpty) return const [];
+  if (deudores.length + acreedores.length > _limiteBusquedaExacta) {
+    return _ordenarParaMostrar(_minimaPorSubgrupos(saldos));
+  }
 
   List<Transferencia>? mejor;
 
@@ -371,6 +378,91 @@ List<Transferencia> deudaMinima(Map<String, int> saldos) {
   buscar([]);
   final resultado = mejor ?? const <Transferencia>[];
   return _ordenarParaMostrar(resultado);
+}
+
+/// Mínimo de pagos = personas con saldo - subgrupos de suma cero.
+/// Busca la partición con más subgrupos (máscaras de bits, O(2^n · n)) y salda cada uno.
+List<Transferencia> _minimaPorSubgrupos(Map<String, int> saldos) {
+  final ids = [for (final entrada in saldos.entries) if (entrada.value != 0) entrada.key]..sort();
+  final n = ids.length;
+  if (n > _limiteSubgrupos) return _saldarDeMayorAMayor(saldos, ids);
+
+  final total = 1 << n;
+  final suma = List<int>.filled(total, 0);
+  final grupos = List<int>.filled(total, 0);
+  for (var mascara = 1; mascara < total; mascara++) {
+    final bajo = mascara & -mascara;
+    suma[mascara] = suma[mascara ^ bajo] + saldos[ids[bajo.bitLength - 1]]!;
+    var mejor = 0;
+    for (var resto = mascara; resto != 0; resto &= resto - 1) {
+      final sinUno = grupos[mascara ^ (resto & -resto)];
+      if (sinUno > mejor) mejor = sinUno;
+    }
+    grupos[mascara] = mejor + (suma[mascara] == 0 ? 1 : 0);
+  }
+
+  // Reconstruye el orden; cada vez que la suma acumulada vuelve a cero se cierra un subgrupo.
+  final orden = <String>[];
+  var mascara = total - 1;
+  while (mascara != 0) {
+    final objetivo = grupos[mascara] - (suma[mascara] == 0 ? 1 : 0);
+    for (var resto = mascara; resto != 0; resto &= resto - 1) {
+      final bit = resto & -resto;
+      if (grupos[mascara ^ bit] == objetivo) {
+        orden.add(ids[bit.bitLength - 1]);
+        mascara ^= bit;
+        break;
+      }
+    }
+  }
+
+  final pagos = <Transferencia>[];
+  var grupo = <String>[];
+  var acumulado = 0;
+  for (final id in orden.reversed) {
+    grupo.add(id);
+    acumulado += saldos[id]!;
+    if (acumulado == 0) {
+      pagos.addAll(_saldarDeMayorAMayor(saldos, grupo));
+      grupo = <String>[];
+    }
+  }
+  return pagos;
+}
+
+/// Salda [ids] (suman cero) con a lo sumo n - 1 pagos: el que más debe al que más le deben.
+List<Transferencia> _saldarDeMayorAMayor(Map<String, int> saldos, List<String> ids) {
+  final deudas = <String, int>{};
+  final creditos = <String, int>{};
+  for (final id in ids) {
+    final monto = saldos[id] ?? 0;
+    if (monto < 0) deudas[id] = -monto;
+    if (monto > 0) creditos[id] = monto;
+  }
+  String? mayor(Map<String, int> montos) {
+    String? elegido;
+    for (final entrada in montos.entries) {
+      final actual = elegido == null ? 0 : montos[elegido]!;
+      if (elegido == null || entrada.value > actual || (entrada.value == actual && entrada.key.compareTo(elegido) < 0)) {
+        elegido = entrada.key;
+      }
+    }
+    return elegido;
+  }
+
+  final pagos = <Transferencia>[];
+  while (true) {
+    final deudor = mayor(deudas);
+    final acreedor = mayor(creditos);
+    if (deudor == null || acreedor == null) break;
+    final deuda = deudas[deudor]!;
+    final credito = creditos[acreedor]!;
+    final pago = deuda < credito ? deuda : credito;
+    pagos.add(Transferencia(deudorId: deudor, acreedorId: acreedor, montoCentavos: pago));
+    _aplicar(deudas, deudor, deuda - pago);
+    _aplicar(creditos, acreedor, credito - pago);
+  }
+  return pagos;
 }
 
 void _aplicar(Map<String, int> montos, String id, int valor) {

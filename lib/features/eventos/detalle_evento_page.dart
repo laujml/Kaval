@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/liquidacion/liquidacion.dart';
 import '../../core/theme/kaval_colors.dart';
 import '../../core/theme/kaval_texto.dart';
+import '../../core/theme/kaval_theme.dart';
 import '../../core/utils/dinero.dart';
 import '../../core/utils/etiquetas.dart';
 import '../../core/utils/fechas.dart';
@@ -25,16 +25,18 @@ class DetalleEventoPage extends StatelessWidget {
 
   final String eventoId;
 
+  // Pantalla de colores claros fijos.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => TemaClaro(child: Builder(builder: _pantalla));
+
+  Widget _pantalla(BuildContext context) {
     final textos = AppLocalizations.of(context);
     final estado = context.watch<KavalState>();
     final evento = estado.buscar(eventoId);
     if (evento == null) {
       return Scaffold(body: Center(child: Text(textos.sinEventos)));
     }
-    final cuentas = calcularSaldos(evento);
-    final resultado = cuentas.copyWith(transferencias: liquidar(cuentas.saldos));
+    final resultado = estado.liquidacionDe(eventoId)!;
     final saldo = resultado.saldoDe(estado.usuario.id);
     return Scaffold(
       backgroundColor: KavalColors.crema,

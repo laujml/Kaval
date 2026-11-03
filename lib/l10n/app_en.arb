@@ -384,5 +384,14 @@
   "propinaInvalida": "Tip must be from 0 to 100",
   "fondoSinCubrir": "Group cash: {monto}. It is not charged between people.",
   "@fondoSinCubrir": {"placeholders": {"monto": {"type": "String"}}},
-  "saldosPendientes": "There are outstanding balances."
+  "saldosPendientes": "There are outstanding balances.",
+  "nuevoAporte": "New contribution",
+  "descripcionAporte": "Description (optional)",
+  "descripcionAporteHint": "E.g. ATM withdrawal",
+  "guardarAporte": "Save contribution",
+  "aporteGuardado": "Contribution saved",
+  "eliminarGasto": "Delete expense",
+  "eliminarGastoPregunta": "Delete “{concepto}”? Balances are recalculated and this cannot be undone.",
+  "@eliminarGastoPregunta": {"placeholders": {"concepto": {"type": "String"}}},
+  "gastoEliminado": "Expense deleted"
 }

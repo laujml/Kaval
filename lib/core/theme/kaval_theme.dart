@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'kaval_medidas.dart';
@@ -112,6 +113,28 @@ ThemeData temaKaval({Brightness brillo = Brightness.light}) {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(KavalMedidas.radioCampo)),
     ),
   );
+}
+
+/// Tema claro para pantallas con colores fijos claros, aunque el sistema esté en oscuro.
+class TemaClaro extends StatelessWidget {
+  const TemaClaro({super.key, required this.child});
+
+  final Widget child;
+
+  static final ThemeData _tema = temaKaval();
+
+  static const _barraEstado = SystemUiOverlayStyle(
+    statusBarIconBrightness: Brightness.dark,
+    statusBarBrightness: Brightness.light,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: _barraEstado,
+      child: Theme(data: _tema, child: child),
+    );
+  }
 }
 
 TextTheme _texto(KavalPaleta paleta) {

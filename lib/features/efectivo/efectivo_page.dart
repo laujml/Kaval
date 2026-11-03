@@ -2,19 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/liquidacion/liquidacion.dart';
 import '../../core/theme/kaval_colors.dart';
 import '../../core/theme/kaval_texto.dart';
+import '../../core/theme/kaval_theme.dart';
 import '../../core/utils/dinero.dart';
 import '../../core/utils/etiquetas.dart';
 import '../../core/utils/fechas.dart';
 import '../../core/widgets/aviso.dart';
 import '../../core/widgets/boton_coral.dart';
+import '../../core/widgets/campo_kaval.dart';
 import '../../core/widgets/ilustraciones.dart';
 import '../../core/widgets/kaval_avatar.dart';
 import '../../core/widgets/logo_kaval.dart';
 import '../../core/widgets/tarjeta_kaval.dart';
 import '../../l10n/app_localizations.dart';
+import '../../models/aporte_efectivo.dart';
 import '../../models/gasto.dart';
 import '../../state/kaval_state.dart';
 
@@ -29,7 +31,7 @@ class EfectivoPage extends StatelessWidget {
     final estado = context.watch<KavalState>();
     final evento = estado.buscar(eventoId);
     if (evento == null) return Scaffold(body: Center(child: Text(textos.sinEventos)));
-    final resultado = calcularLiquidacion(evento);
+    final resultado = estado.liquidacionDe(eventoId)!;
     final custodio = evento.integrante(evento.custodioId);
     final porcentaje = resultado.reunido == 0 ? 0 : ((resultado.sobrante * 100) / resultado.reunido).round();
     final enEfectivo = evento.gastos.where((g) => g.esEfectivoGrupo).toList();
@@ -117,7 +119,11 @@ class EfectivoPage extends StatelessWidget {
                     children: [
                       Text(textos.quienAporto, style: KavalTexto.titulo(size: 18)),
                       const Spacer(),
-                      Text(textos.aporte, style: KavalTexto.cuerpo(weight: FontWeight.w800, color: KavalColors.coral)),
+                      TextButton(
+                        key: const ValueKey('aporte-cabecera'),
+                        onPressed: () => _registrarAporte(context, eventoId),
+                        child: Text(textos.aporte, style: KavalTexto.cuerpo(weight: FontWeight.w800, color: KavalColors.coral)),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -173,7 +179,7 @@ class EfectivoPage extends StatelessWidget {
                   Expanded(
                     child: BotonBlanco(
                       texto: textos.aporte,
-                      onPressed: () => mostrarAviso(context, textos.ayudaEfectivo),
+                      onPressed: () => _registrarAporte(context, eventoId),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -187,6 +193,144 @@ class EfectivoPage extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Hoja para registrar dinero que alguien pone en el fondo del grupo.
+Future<void> _registrarAporte(BuildContext context, String eventoId) async {
+  final textos = AppLocalizations.of(context);
+  final guardado = await showModalBottomSheet<bool>(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
+    backgroundColor: KavalColors.crema,
+    builder: (_) => TemaClaro(child: _FormularioAporte(eventoId: eventoId)),
+  );
+  if (guardado == true && context.mounted) mostrarAviso(context, textos.aporteGuardado);
+}
+
+class _FormularioAporte extends StatefulWidget {
+  const _FormularioAporte({required this.eventoId});
+
+  final String eventoId;
+
+  @override
+  State<_FormularioAporte> createState() => _FormularioAporteState();
+}
+
+class _FormularioAporteState extends State<_FormularioAporte> {
+  final _formKey = GlobalKey<FormState>();
+  final _monto = TextEditingController();
+  final _descripcion = TextEditingController();
+  String? _integranteId;
+
+  @override
+  void initState() {
+    super.initState();
+    final estado = context.read<KavalState>();
+    final ids = [for (final persona in estado.buscar(widget.eventoId)?.integrantes ?? const []) persona.id];
+    _integranteId = ids.contains(estado.usuario.id) ? estado.usuario.id : (ids.isEmpty ? null : ids.first);
+  }
+
+  @override
+  void dispose() {
+    _monto.dispose();
+    _descripcion.dispose();
+    super.dispose();
+  }
+
+  void _guardar() {
+    final integranteId = _integranteId;
+    if (!_formKey.currentState!.validate() || integranteId == null) return;
+    context.read<KavalState>().agregarAporte(
+          widget.eventoId,
+          AporteEfectivo(
+            id: 'aporte-${DateTime.now().microsecondsSinceEpoch}',
+            integranteId: integranteId,
+            montoCentavos: centavosDesdeTexto(_monto.text)!,
+            descripcion: _descripcion.text.trim(),
+            fecha: DateTime.now(),
+          ),
+        );
+    Navigator.of(context).pop(true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textos = AppLocalizations.of(context);
+    final evento = context.watch<KavalState>().buscar(widget.eventoId);
+    if (evento == null) return const SizedBox.shrink();
+    final estiloCampo = KavalTexto.cuerpo(color: KavalColors.marino, weight: FontWeight.w800);
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + MediaQuery.viewInsetsOf(context).bottom),
+      child: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(textos.nuevoAporte, style: KavalTexto.titulo(size: 18)),
+              const SizedBox(height: 12),
+              EtiquetaCampo(textos.quienAporto),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final persona in evento.integrantes)
+                    ChoiceChip(
+                      key: ValueKey('aporte-integrante-${persona.id}'),
+                      avatar: avatarDe(persona, tamano: 24),
+                      label: Text(persona.nombre),
+                      selected: _integranteId == persona.id,
+                      selectedColor: KavalColors.durazno,
+                      checkmarkColor: KavalColors.coral,
+                      onSelected: (_) => setState(() => _integranteId = persona.id),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              EtiquetaCampo(textos.monto),
+              TextFormField(
+                key: const ValueKey('aporte-monto'),
+                controller: _monto,
+                autofocus: true,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                textInputAction: TextInputAction.next,
+                style: estiloCampo,
+                decoration: decoracionCampo(context, icono: Icons.attach_money, hint: '0.00'),
+                validator: (valor) {
+                  final centavos = centavosDesdeTexto(valor ?? '');
+                  if (centavos == null || centavos <= 0) return textos.montoInvalido;
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              EtiquetaCampo(textos.descripcionAporte),
+              TextFormField(
+                key: const ValueKey('aporte-descripcion'),
+                controller: _descripcion,
+                textCapitalization: TextCapitalization.sentences,
+                textInputAction: TextInputAction.done,
+                onFieldSubmitted: (_) => _guardar(),
+                style: estiloCampo,
+                decoration: decoracionCampo(context, hint: textos.descripcionAporteHint),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(child: BotonBlanco(texto: textos.cancelar, onPressed: () => Navigator.of(context).pop(false))),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: BotonCoral(key: const ValueKey('aporte-guardar'), texto: textos.guardarAporte, onPressed: _guardar),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

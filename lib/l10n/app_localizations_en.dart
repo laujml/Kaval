@@ -1141,4 +1141,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get saldosPendientes => 'There are outstanding balances.';
+
+  @override
+  String get nuevoAporte => 'New contribution';
+
+  @override
+  String get descripcionAporte => 'Description (optional)';
+
+  @override
+  String get descripcionAporteHint => 'E.g. ATM withdrawal';
+
+  @override
+  String get guardarAporte => 'Save contribution';
+
+  @override
+  String get aporteGuardado => 'Contribution saved';
+
+  @override
+  String get eliminarGasto => 'Delete expense';
+
+  @override
+  String eliminarGastoPregunta(String concepto) {
+    return 'Delete “$concepto”? Balances are recalculated and this cannot be undone.';
+  }
+
+  @override
+  String get gastoEliminado => 'Expense deleted';
 }

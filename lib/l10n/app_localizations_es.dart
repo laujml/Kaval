@@ -1146,4 +1146,30 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get saldosPendientes => 'Hay saldos pendientes.';
+
+  @override
+  String get nuevoAporte => 'Nuevo aporte';
+
+  @override
+  String get descripcionAporte => 'Descripción (opcional)';
+
+  @override
+  String get descripcionAporteHint => 'Ej. retiro del cajero';
+
+  @override
+  String get guardarAporte => 'Guardar aporte';
+
+  @override
+  String get aporteGuardado => 'Aporte guardado';
+
+  @override
+  String get eliminarGasto => 'Eliminar gasto';
+
+  @override
+  String eliminarGastoPregunta(String concepto) {
+    return '¿Eliminar «$concepto»? Los saldos se recalculan y no se puede deshacer.';
+  }
+
+  @override
+  String get gastoEliminado => 'Gasto eliminado';
 }
