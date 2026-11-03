@@ -15,7 +15,7 @@ Sirve en teléfonos Android 7 o más nuevos, de 32 o 64 bits, y en emuladores x8
 SHA-256 del archivo, para comprobar que se descargó completo:
 
 ```text
-D755832F1BB1F6316A68EE1CADFEAE845A63A83D19D7FDC4FDE0ACD81203E144
+9B113BBDD2ACE57AEE94CC6DB56663036D3778A7D36CD655477CA3F4745BC246
 ```
 
 1. Abre el enlace en el teléfono y descarga el archivo. Tiene que llamarse `Kaval-1.0.0.apk`.
