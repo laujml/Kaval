@@ -10,7 +10,13 @@ El archivo está en [`distribucion/Kaval-1.0.0.apk`](distribucion/Kaval-1.0.0.ap
 
 https://github.com/laujml/Kaval/raw/main/distribucion/Kaval-1.0.0.apk
 
-Sirve en teléfonos Android 7 o más nuevos, de 64 bits. Casi cualquier teléfono de los últimos años entra ahí. No hace falta clonar el repositorio ni instalar Flutter.
+Sirve en teléfonos Android 7 o más nuevos, de 32 o 64 bits, y en emuladores x86_64. Pesa unos 74 MB. No hace falta clonar el repositorio ni instalar Flutter.
+
+SHA-256 del archivo, para comprobar que se descargó completo:
+
+```text
+D755832F1BB1F6316A68EE1CADFEAE845A63A83D19D7FDC4FDE0ACD81203E144
+```
 
 1. Abre el enlace en el teléfono y descarga el archivo. Tiene que llamarse `Kaval-1.0.0.apk`.
 2. Ábrelo. Si Android pregunta, permite instalar apps desde el navegador o desde Archivos.
@@ -50,6 +56,18 @@ En esta máquina el emulador de prueba es el Pixel 7 (`emulator-5554`). Si no ap
 ```text
 emulator -avd Pixel_7 -no-snapshot-load
 ```
+
+## Generar el APK
+
+Hace falta `android/app/google-services.json` (ver [Firebase](#firebase-una-sola-vez)). Desde la raíz del repositorio:
+
+```text
+flutter build apk --release
+```
+
+El archivo queda en `build/app/outputs/flutter-apk/app-release.apk`; cópialo a `distribucion/Kaval-1.0.0.apk`. No uses `--target-platform`: el APK tiene que traer las tres arquitecturas o se cierra en algunos teléfonos.
+
+Se firma con la llave debug de la máquina que compila. Para que funcione Google, el SHA-1 de esa llave tiene que estar en Firebase (paso 7 de abajo).
 
 ## Entrar
 
